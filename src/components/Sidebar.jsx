@@ -1,30 +1,30 @@
-import { NavLink } from "react-router-dom";
 import {
-  FiBarChart,
-  FiEdit,
   FiSend,
-  FiUsers,
   FiClock,
   FiLayers,
   FiLogOut,
   FiGrid,
   FiEdit3,
   FiInbox,
+  FiSettings,
 } from "react-icons/fi";
 
-const Sidebar = ({ active, setActive }) => {
+const Sidebar = ({ active, setActive, user, onLogout }) => {
   const menu = [
-    { name: "Dashboard", key: "dashboard", Icon: FiGrid },
-    { name: "Drafts", key: "drafts", Icon: FiEdit3 },
-    { name: "Send Emails", key: "send", Icon: FiSend },
-    { name: "Follow-ups", key: "followups", Icon: FiClock },
-    { name: "Inbox", key: "inbox", Icon: FiInbox },
+    { name: "Dashboard",   key: "dashboard", Icon: FiGrid   },
+    { name: "Drafts",      key: "drafts",    Icon: FiEdit3  },
+    { name: "Send Emails", key: "send",      Icon: FiSend   },
+    { name: "Follow-ups",  key: "followups", Icon: FiClock  },
+    { name: "Inbox",       key: "inbox",     Icon: FiInbox  },
   ];
+
+  const initial = user?.name?.[0]?.toUpperCase() ?? "O";
+  const displayName = user?.name ?? "Omar";
 
   return (
     <div
       style={{
-        width: 230,
+        width: 220,
         flexShrink: 0,
         background: "linear-gradient(180deg,#0f172a 0%,#1e293b 100%)",
         display: "flex",
@@ -38,45 +38,32 @@ const Sidebar = ({ active, setActive }) => {
       {/* Logo */}
       <div
         style={{
-          padding: "22px 20px 18px",
+          padding: "18px 18px 16px",
           borderBottom: "1px solid rgba(255,255,255,0.06)",
+          flexShrink: 0,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div
             style={{
-              width: 34,
-              height: 34,
-              borderRadius: 10,
+              width: 32,
+              height: 32,
+              borderRadius: 9,
               background: "linear-gradient(135deg,#6366f1,#818cf8)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               boxShadow: "0 4px 12px rgba(99,102,241,0.4)",
+              flexShrink: 0,
             }}
           >
-            <FiLayers size={17} color="#fff" />
+            <FiLayers size={15} color="#fff" />
           </div>
           <div>
-            <div
-              style={{
-                fontSize: 13.5,
-                fontWeight: 700,
-                color: "#f1f5f9",
-                letterSpacing: "-0.01em",
-              }}
-            >
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9", letterSpacing: "-0.01em" }}>
               Outreach
             </div>
-            <div
-              style={{
-                fontSize: 10.5,
-                color: "#64748b",
-                fontWeight: 500,
-                letterSpacing: "0.05em",
-                textTransform: "uppercase",
-              }}
-            >
+            <div style={{ fontSize: 10, color: "#64748b", fontWeight: 500, letterSpacing: "0.05em", textTransform: "uppercase" }}>
               Manager
             </div>
           </div>
@@ -86,22 +73,23 @@ const Sidebar = ({ active, setActive }) => {
       {/* Nav */}
       <nav
         style={{
-          padding: "14px 10px",
+          padding: "12px 10px",
           flex: 1,
           display: "flex",
           flexDirection: "column",
           gap: 2,
+          overflowY: "auto",
         }}
       >
         <div
           style={{
-            fontSize: 10,
+            fontSize: 9.5,
             fontWeight: 600,
             color: "#475569",
             letterSpacing: "0.08em",
             textTransform: "uppercase",
             padding: "0 10px",
-            marginBottom: 6,
+            marginBottom: 5,
           }}
         >
           Main Menu
@@ -112,57 +100,68 @@ const Sidebar = ({ active, setActive }) => {
             onClick={() => setActive(key)}
             className={`nav-item ${active === key ? "active" : ""}`}
           >
-            <Icon size={15} />
+            <Icon size={14} />
             <span style={{ flex: 1, textAlign: "left" }}>{name}</span>
             <span className="nav-dot" />
           </button>
         ))}
       </nav>
 
-      {/* User footer */}
+      {/* Bottom actions: Settings + User */}
       <div
         style={{
-          padding: "14px 12px",
+          padding: "10px 10px 14px",
           borderTop: "1px solid rgba(255,255,255,0.06)",
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+          flexShrink: 0,
         }}
       >
+        {/* Settings */}
+        <button
+          onClick={() => setActive("settings")}
+          className={`nav-item ${active === "settings" ? "active" : ""}`}
+        >
+          <FiSettings size={14} />
+          <span style={{ flex: 1, textAlign: "left" }}>Settings</span>
+        </button>
+
+        {/* User row */}
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 10,
+            gap: 9,
             padding: "8px 10px",
             borderRadius: 10,
             cursor: "pointer",
+            marginTop: 4,
           }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.background = "rgba(255,255,255,0.05)")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.background = "transparent")
-          }
+          onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
         >
           <div
             style={{
-              width: 32,
-              height: 32,
+              width: 30,
+              height: 30,
               borderRadius: "50%",
               background: "linear-gradient(135deg,#6366f1,#a78bfa)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: 700,
               color: "#fff",
               flexShrink: 0,
             }}
           >
-            O
+            {initial}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div
               style={{
-                fontSize: 13,
+                fontSize: 12.5,
                 fontWeight: 600,
                 color: "#e2e8f0",
                 whiteSpace: "nowrap",
@@ -170,11 +169,30 @@ const Sidebar = ({ active, setActive }) => {
                 textOverflow: "ellipsis",
               }}
             >
-              Omar
+              {displayName}
             </div>
-            <div style={{ fontSize: 11, color: "#64748b" }}>Admin</div>
+            <div style={{ fontSize: 10.5, color: "#64748b" }}>Admin</div>
           </div>
-          <FiLogOut size={14} color="#475569" />
+          <button
+            onClick={onLogout}
+            title="Log out"
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "#475569",
+              display: "flex",
+              alignItems: "center",
+              padding: 4,
+              borderRadius: 6,
+              transition: "color 0.15s",
+              flexShrink: 0,
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#ef4444")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "#475569")}
+          >
+            <FiLogOut size={13} />
+          </button>
         </div>
       </div>
     </div>

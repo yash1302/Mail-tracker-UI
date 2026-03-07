@@ -1,10 +1,11 @@
 import { FiAlertCircle, FiCheck, FiCornerUpRight, FiEye } from "react-icons/fi";
 
 export const statusConfig = {
-  Booked: { bg: "#d1fae5", color: "#065f46" },
-  Replied: { bg: "#dbeafe", color: "#1e40af" },
-  Opened: { bg: "#fef9c3", color: "#854d0e" },
-  Ignored: { bg: "#fee2e2", color: "#991b1b" },
+  Sent: { bg: "#eef2ff", color: "#6366f1" },
+  Opened: { bg: "#e0f2fe", color: "#0284c7" },
+  Replied: { bg: "#dcfce7", color: "#16a34a" },
+  "Followup Pending": { bg: "#fef9c3", color: "#ca8a04" },
+  "Followup Sent": { bg: "#ede9fe", color: "#7c3aed" },
 };
 
 export const tagConfig = {
