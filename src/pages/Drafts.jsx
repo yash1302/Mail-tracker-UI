@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { FiPaperclip,FiPlus,FiX,FiEdit } from "react-icons/fi";
+import { FiPaperclip, FiPlus, FiX, FiEdit } from "react-icons/fi";
 
 // ── Inline mock components (swap for your real imports) ──────────────────────
 const formatBytes = (b) =>
@@ -213,11 +213,13 @@ const AttachmentList = ({ attachments }) =>
 const Drafts = () => {
   const [drafts, setDrafts] = useState([
     {
+      title: "Full Stack Developer Outreach",
       subject: "Partnership Opportunity",
       body: "Hi, I would like to connect with your team about a potential partnership.",
       attachments: [],
     },
     {
+      title: "React Developer Opportunity",
       subject: "Quick question about your product",
       body: "We've been evaluating solutions in this space and yours stood out.",
       attachments: [],
@@ -229,8 +231,10 @@ const Drafts = () => {
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [attachments, setAttachments] = useState([]);
+  const [title, setTitle] = useState("");
 
   const reset = () => {
+    setTitle("");
     setSubject("");
     setBody("");
     setAttachments([]);
@@ -242,6 +246,7 @@ const Drafts = () => {
     reset();
   };
   const openRow = (row, i) => {
+    setTitle(row.title || "");
     setSubject(row.subject);
     setBody(row.body);
     setAttachments(row.attachments || []);
@@ -251,10 +256,18 @@ const Drafts = () => {
   };
   const save = () => {
     if (!subject.trim() && !body.trim()) return;
-    const d = { subject, body, attachments };
+
+    const d = {
+      title,
+      subject,
+      body,
+      attachments,
+    };
+
     if (modalMode === "edit" && editIdx !== null)
       setDrafts(drafts.map((x, i) => (i === editIdx ? d : x)));
     else setDrafts([...drafts, d]);
+
     close();
   };
 
@@ -300,7 +313,7 @@ const Drafts = () => {
                 borderBottom: "1px solid #f1f5f9",
               }}
             >
-              {["Subject", "Body Preview", "Attachments"].map((h) => (
+              {["Title", "Subject", "Body Preview", "Attachments"].map((h) => (
                 <th
                   key={h}
                   style={{
@@ -345,6 +358,20 @@ const Drafts = () => {
                     transition: "background 0.15s",
                   }}
                 >
+                  <td style={{ padding: "14px 18px" }}>
+                    <span
+                      style={{
+                        background: "#eef2ff",
+                        color: "#6366f1",
+                        padding: "3px 10px",
+                        borderRadius: 20,
+                        fontSize: 11,
+                        fontWeight: 600,
+                      }}
+                    >
+                      {row.title || "General"}
+                    </span>
+                  </td>
                   <td
                     style={{
                       padding: "14px 18px",
@@ -504,6 +531,49 @@ const Drafts = () => {
                 overflowY: "auto",
               }}
             >
+              <div>
+                <label
+                  style={{
+                    fontSize: 10.5,
+                    fontWeight: 700,
+                    color: "#94a3b8",
+                    letterSpacing: "0.05em",
+                    textTransform: "uppercase",
+                    display: "block",
+                    marginBottom: 7,
+                  }}
+                >
+                  Draft Title
+                </label>
+
+                {isView ? (
+                  <p
+                    style={{ fontSize: 13, fontWeight: 600, color: "#0f172a" }}
+                  >
+                    {title || (
+                      <span style={{ color: "#cbd5e1", fontWeight: 400 }}>
+                        No title
+                      </span>
+                    )}
+                  </p>
+                ) : (
+                  <input
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="e.g. React Developer Outreach"
+                    style={{
+                      border: "1px solid #e2e8f0",
+                      borderRadius: 9,
+                      padding: "9px 12px",
+                      width: "100%",
+                      fontSize: 13,
+                      color: "#374151",
+                      outline: "none",
+                      fontFamily: "DM Sans,sans-serif",
+                    }}
+                  />
+                )}
+              </div>
               <div>
                 <label
                   style={{
