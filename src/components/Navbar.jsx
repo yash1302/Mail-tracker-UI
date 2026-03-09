@@ -1,4 +1,5 @@
-import { FiSettings } from "react-icons/fi";
+import { useContext } from "react";
+import { userContext } from "../context/ContextProvider";
 
 const pageTitles = {
   dashboard: {
@@ -23,47 +24,21 @@ const pageTitles = {
   },
 };
 
-const Navbar = ({ active }) => {
+const Navbar = () => {
+  const { active } = useContext(userContext);
+
   const info = pageTitles[active] || pageTitles.dashboard;
 
   return (
-    <div
-      style={{
-        height: 54,
-        display: "flex",
-        alignItems: "center",
-        padding: "0 24px",
-        background: "#fff",
-        borderBottom: "1px solid #f1f5f9",
-        flexShrink: 0,
-        gap: 10,
-      }}
-    >
-      {/* Page heading */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-          <h1
-            style={{
-              fontSize: 15,
-              fontWeight: 800,
-              color: "#0f172a",
-              margin: 0,
-              letterSpacing: "-0.02em",
-              whiteSpace: "nowrap",
-            }}
-          >
+    <div className="h-[54px] flex items-center px-6 bg-white border-b border-slate-100 flex-shrink-0">
+      {/* Page Heading */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-baseline gap-3">
+          <h1 className="text-[15px] font-bold text-slate-900 tracking-tight whitespace-nowrap">
             {info.title}
           </h1>
-          <span
-            style={{
-              fontSize: 12,
-              color: "#94a3b8",
-              fontWeight: 400,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
+
+          <span className="text-xs text-slate-400 font-normal truncate">
             {info.sub}
           </span>
         </div>

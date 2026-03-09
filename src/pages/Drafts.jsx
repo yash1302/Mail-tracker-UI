@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { FiPaperclip, FiPlus, FiX, FiEdit } from "react-icons/fi";
+import { FiPaperclip, FiPlus, FiX, FiEdit,FiFile } from "react-icons/fi";
 
 // ── Inline mock components (swap for your real imports) ──────────────────────
 const formatBytes = (b) =>
