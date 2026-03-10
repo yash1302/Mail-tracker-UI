@@ -1,11 +1,17 @@
 import { useState } from "react";
 import {
-  FiX,
-  FiSend,
   FiEdit3,
   FiChevronDown,
   FiChevronUp,
+  FiX,
+  FiAlertCircle,
+  FiAtSign,
+  FiSend,
+  FiCheck,
+  FiRefreshCw,
 } from "react-icons/fi";
+
+const DAY_MS = 86400000;
 
 const drafts = [
   {
@@ -16,8 +22,7 @@ Just following up on my previous email.
 
 Wanted to check if you had a chance to review it.
 
-Best,
-`,
+Best,`,
   },
   {
     subject: "Checking in",
@@ -27,57 +32,66 @@ Hope you're doing well.
 
 Just wanted to check if my previous message reached you.
 
-Best,
-`,
-  },
-  {
-    subject: "Final follow up",
-    body: `Hi {{name}},
-
-Just sending a final follow-up regarding my earlier email.
-
-Let me know if it's worth discussing.
-
-Best,
-`,
+Best,`,
   },
 ];
 
 const FollowupModal = ({ lead, onClose }) => {
+  if (!lead) return null;
+
+  const name = lead.name || lead.to;
+
+  const daysSince = Math.floor(
+    (Date.now() - new Date(lead.sentAt).getTime()) / DAY_MS
+  );
+
+  const hue = (name.charCodeAt(0) * 17) % 360;
+
   const [subject, setSubject] = useState(`Re: ${lead.subject}`);
-  const [message, setMessage] = useState(`Hi ${lead.name},
+  const [message, setMessage] = useState(
+    `Hi ${name},
 
 Just following up on my previous email.
 
 Wanted to check if you had a chance to review it.
 
-Best,
-`);
+Best,`
+  );
 
   const [showDraftPicker, setShowDraftPicker] = useState(false);
-
-  const hue = (lead.name.charCodeAt(0) * 17) % 360;
+  const [sending, setSending] = useState(false);
+  const [sentSuccess, setSentSuccess] = useState(false);
 
   const loadDraft = (draft) => {
     setSubject(draft.subject);
-    setMessage(draft.body.replace("{{name}}", lead.name));
+    setMessage(draft.body.replace("{{name}}", name));
     setShowDraftPicker(false);
   };
 
-  const handleSend = () => {
-    console.log({
-      to: lead.email,
-      subject,
-      message,
-    });
+  const sendFollowUp = () => {
+    setSending(true);
 
-    onClose();
+    setTimeout(() => {
+      console.log("Sending follow up", {
+        to: lead.email,
+        subject,
+        message,
+      });
+
+      setSending(false);
+      setSentSuccess(true);
+
+      setTimeout(onClose, 1400);
+    }, 1000);
   };
+
+  const fld =
+    "w-full border border-slate-200 rounded-md px-3 py-2 text-sm outline-none focus:border-indigo-500";
 
   return (
     <div
-      onClick={onClose}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+      onClick={onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
@@ -93,19 +107,20 @@ Best,
                 color: `hsl(${hue},45%,35%)`,
               }}
             >
-              {lead.name[0]}
+              {name[0]}
             </div>
 
             <div>
               <h2 className="text-sm font-bold text-slate-900">
-                Follow-up to {lead.name}
+                Follow-up to {name}
               </h2>
-              <p className="text-xs text-slate-400">{lead.email}</p>
+              <p className="text-xs text-slate-400">
+                {lead.email} · {daysSince} days since original
+              </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Draft Toggle */}
             <button
               onClick={() => setShowDraftPicker(!showDraftPicker)}
               className={`flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-md border transition
@@ -140,10 +155,10 @@ Best,
               Load a draft template
             </p>
 
-            {drafts.map((draft, i) => (
+            {drafts.map((d, i) => (
               <button
                 key={i}
-                onClick={() => loadDraft(draft)}
+                onClick={() => loadDraft(d)}
                 className="flex gap-2 w-full text-left border border-slate-200 rounded-md p-2 mb-2 bg-white hover:border-indigo-500 hover:bg-indigo-50 transition"
               >
                 <div className="w-6 h-6 rounded-md bg-indigo-100 text-indigo-600 flex items-center justify-center">
@@ -152,16 +167,25 @@ Best,
 
                 <div className="min-w-0">
                   <p className="text-xs font-semibold text-slate-900 truncate">
-                    {draft.subject}
+                    {d.subject}
                   </p>
                   <p className="text-[11px] text-slate-400 truncate">
-                    {draft.body.replace(/\n/g, " ").slice(0, 60)}...
+                    {d.body.replace(/\n/g, " ").slice(0, 60)}...
                   </p>
                 </div>
               </button>
             ))}
           </div>
         )}
+
+        {/* CONTEXT */}
+        <div className="px-6 py-2 bg-amber-50 border-b border-amber-200 flex items-center gap-2">
+          <FiAlertCircle size={13} className="text-amber-700" />
+          <p className="text-xs text-amber-900">
+            Original: <strong>{lead.subject}</strong> · sent {daysSince} days
+            ago · {lead.opens} open{lead.opens !== 1 ? "s" : ""}
+          </p>
+        </div>
 
         {/* FORM */}
         <div className="px-6 py-5 flex flex-col gap-4">
@@ -173,7 +197,7 @@ Best,
             <input
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm outline-none focus:border-indigo-500"
+              className={fld}
             />
           </div>
 
@@ -186,7 +210,7 @@ Best,
               rows={7}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm outline-none focus:border-indigo-500 resize-none leading-relaxed"
+              className={`${fld} resize-none leading-relaxed`}
             />
 
             <p className="text-right text-xs text-slate-300 mt-1">
@@ -197,27 +221,33 @@ Best,
 
         {/* FOOTER */}
         <div className="flex items-center justify-between px-6 py-3 border-t border-slate-200 bg-slate-50">
-          <span className="text-xs text-slate-400">
-            To: {lead.email}
+          <span className="text-xs text-slate-400 flex items-center gap-1">
+            <FiAtSign size={12} /> {lead.email}
           </span>
 
-          <div className="flex gap-2">
+          {sentSuccess ? (
+            <div className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-md text-sm font-semibold">
+              <FiCheck size={14} /> Follow-up sent
+            </div>
+          ) : (
             <button
-              onClick={onClose}
-              className="px-4 py-2 text-sm font-semibold rounded-md border border-slate-200 text-slate-500 hover:bg-slate-100"
-            >
-              Cancel
-            </button>
-
-            <button
-              onClick={handleSend}
-              disabled={!subject.trim() || !message.trim()}
+              onClick={sendFollowUp}
+              disabled={!subject.trim() || !message.trim() || sending}
               className="px-4 py-2 text-sm font-bold rounded-md bg-indigo-600 text-white flex items-center gap-1 hover:bg-indigo-700 disabled:opacity-40"
             >
-              <FiSend size={13} />
-              Send Follow-up
+              {sending ? (
+                <>
+                  <FiRefreshCw className="animate-spin" size={13} />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <FiSend size={13} />
+                  Send Follow-up
+                </>
+              )}
             </button>
-          </div>
+          )}
         </div>
       </div>
     </div>

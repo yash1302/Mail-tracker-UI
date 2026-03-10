@@ -3,6 +3,8 @@ import Dashboard from "./pages/Dashboard";
 import MainLayout from "./layouts/mainLayout";
 import Drafts from "./pages/Drafts";
 import SendEmails from "./pages/SendEmails";
+import LandingPage from "./pages/LandingPage";
+import Followups from "./pages/Followups.jsx";
 
 export const router = createBrowserRouter([
   {
@@ -23,10 +25,16 @@ export const router = createBrowserRouter([
       },
       {
         path: "/send_mail",
-        element: <SendEmails/>
+        element: <SendEmails />,
       },
       {
-      }
+        path : "/followups",
+        element : <Followups/>
+      },
     ],
+  },
+  {
+    path: "/",
+    element: <LandingPage />,
   },
 ]);

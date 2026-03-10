@@ -1,8 +1,5 @@
 import { useState, useRef } from "react";
-import {
-  FiEdit3,
-  FiInbox,
-} from "react-icons/fi";
+import { FiEdit3, FiInbox } from "react-icons/fi";
 
 import { DRAFT_TEMPLATES, sentEmailsData } from "../data/dashboardData";
 import { sentStatusConfig } from "../utils/statusConfig.jsx";
@@ -12,7 +9,6 @@ import SentEmailsCard from "../components/email/sent email/SentEmailsCard.jsx";
 import ViewEmailModal from "../components/email/sent email/ViewEmailModal.jsx";
 
 const SendEmails = () => {
-
   const [tab, setTab] = useState("compose");
 
   const [recipients, setRecipients] = useState([]);
@@ -65,16 +61,14 @@ const SendEmails = () => {
   ];
 
   const addFiles = (files) => {
-
     const nf = Array.from(files).filter(
-      (f) => !attachments.find((a) => a.name === f.name && a.size === f.size)
+      (f) => !attachments.find((a) => a.name === f.name && a.size === f.size),
     );
 
     setAttachments((p) => [...p, ...nf]);
   };
 
   const handleSend = () => {
-
     const targets = [
       ...recipients,
       ...(recipientInput.trim() ? [recipientInput.trim()] : []),
@@ -85,7 +79,6 @@ const SendEmails = () => {
     setSending(true);
 
     setTimeout(() => {
-
       const now = new Date();
 
       const newMails = targets.map((email) => ({
@@ -125,7 +118,6 @@ const SendEmails = () => {
         setSentSuccess(false);
         setTab("sent");
       }, 1800);
-
     }, 1400);
   };
 
@@ -134,33 +126,25 @@ const SendEmails = () => {
   const statuses = ["All", ...new Set(sentList.map((m) => m.status))];
 
   const filtered = sentList.filter((m) => {
-
     const q = search.toLowerCase();
 
     return (
       (statusFilter === "All" || m.status === statusFilter) &&
-      (
-        m.to.toLowerCase().includes(q) ||
+      (m.to.toLowerCase().includes(q) ||
         m.email.toLowerCase().includes(q) ||
-        m.subject.toLowerCase().includes(q)
-      )
+        m.subject.toLowerCase().includes(q))
     );
-
   });
 
   return (
-
     <div className="flex flex-col">
-
       {/* Tabs */}
 
       <div className="flex border-b-2 border-slate-100 mb-[20px]">
-
         {[
-          ["compose", "Compose Email", <FiEdit3 size={14}/>],
-          ["sent", "Sent Emails", <FiInbox size={14}/>],
+          ["compose", "Compose Email", <FiEdit3 size={14} />],
+          ["sent", "Sent Emails", <FiInbox size={14} />],
         ].map(([key, label, icon]) => (
-
           <button
             key={key}
             onClick={() => setTab(key)}
@@ -171,11 +155,8 @@ const SendEmails = () => {
                 : "border-transparent text-slate-400"
             }`}
           >
-
             {icon} {label}
-
             {key === "sent" && sentList.length > 0 && (
-
               <span
                 className={`text-[10px] font-bold px-[6px] py-[1px] rounded-full
                 ${
@@ -186,19 +167,14 @@ const SendEmails = () => {
               >
                 {sentList.length}
               </span>
-
             )}
-
           </button>
-
         ))}
-
       </div>
 
       {/* ── COMPOSE TAB ── */}
 
       {tab === "compose" && (
-
         <ComposeEmail
           recipients={recipients}
           setRecipients={setRecipients}
@@ -226,13 +202,11 @@ const SendEmails = () => {
           canSend={canSend}
           allTo={allTo}
         />
-
       )}
 
       {/* ── SENT TAB ── */}
 
       {tab === "sent" && (
-
         <SentEmailsCard
           filtered={filtered}
           search={search}
@@ -245,13 +219,11 @@ const SendEmails = () => {
           setViewEmail={setViewEmail}
           setSentList={setSentList}
         />
-
       )}
 
       {/* View Modal */}
 
       {viewEmail && (
-
         <ViewEmailModal
           viewEmail={viewEmail}
           setViewEmail={setViewEmail}
@@ -262,15 +234,12 @@ const SendEmails = () => {
           setBody={setBody}
           setTab={setTab}
         />
-
       )}
 
       <style>
         {`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}
       </style>
-
     </div>
-
   );
 };
 
