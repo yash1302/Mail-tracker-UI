@@ -1,14 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FiTrash2,
   FiCheckCircle,
   FiMail,
-  FiPlus,
-  FiAlertCircle,
   FiShield,
   FiRefreshCw,
-  FiStar,
+  FiAlertTriangle,
+  FiX,
+  FiAlertCircle,
 } from "react-icons/fi";
+import { deleteGmailAccount, getGmailAccounts } from "../utils/api.utils";
+import { toast } from "react-toastify";
 
 const GoogleIcon = ({ size = 16 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24">
@@ -30,6 +32,101 @@ const GoogleIcon = ({ size = 16 }) => (
     />
   </svg>
 );
+
+/* ── Disconnect confirmation modal ── */
+const DisconnectModal = ({ account, onConfirm, onCancel }) => {
+  if (!account) return null;
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 animate-in fade-in duration-150"
+        onClick={onCancel}
+      />
+
+      {/* Modal */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div
+          className="bg-white rounded-2xl shadow-2xl shadow-slate-200 border border-slate-100 w-full max-w-md animate-in zoom-in-95 fade-in duration-150"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-start justify-between p-5 pb-4">
+            <div className="flex items-center gap-3">
+              {/* Warning icon */}
+              <div className="w-10 h-10 rounded-xl bg-red-50 border border-red-100 flex items-center justify-center flex-shrink-0">
+                <FiAlertTriangle size={18} className="text-red-500" />
+              </div>
+              <div>
+                <p className="text-[14px] font-bold text-slate-900 leading-tight">
+                  Disconnect Gmail account?
+                </p>
+                <p className="text-[12px] text-slate-400 mt-0.5 font-medium truncate max-w-[220px]">
+                  {account.email}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={onCancel}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors flex-shrink-0"
+            >
+              <FiX size={16} />
+            </button>
+          </div>
+
+          {/* Warning list */}
+          <div className="mx-5 mb-4 rounded-xl bg-red-50 border border-red-100 divide-y divide-red-100 overflow-hidden">
+            {[
+              {
+                icon: FiMail,
+                text: "Outreach emails can no longer be sent from this account",
+              },
+              {
+                icon: FiCheckCircle,
+                text: "Reply tracking for campaigns using this account will stop",
+              },
+              {
+                icon: FiAlertCircle,
+                text: "Active campaigns linked to this account may be interrupted",
+              },
+            ].map(({ icon: Icon, text }) => (
+              <div key={text} className="flex items-start gap-3 px-4 py-3">
+                <Icon size={13} className="text-red-400 flex-shrink-0 mt-0.5" />
+                <p className="text-[12px] text-red-600 leading-relaxed">
+                  {text}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* Tip */}
+          <p className="mx-5 mb-4 text-[11.5px] text-slate-400 leading-relaxed">
+            You can reconnect this account at any time from Settings. This does
+            not delete any emails or data from your Gmail inbox.
+          </p>
+
+          {/* Actions */}
+          <div className="flex items-center gap-2.5 px-5 py-4 border-t border-slate-100">
+            <button
+              onClick={onCancel}
+              className="flex-1 py-2.5 rounded-xl text-[13px] font-semibold text-slate-600 border border-slate-200 hover:bg-slate-50 transition-colors"
+            >
+              Keep connected
+            </button>
+            <button
+              onClick={onConfirm}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] font-bold text-white bg-red-500 hover:bg-red-600 active:scale-95 transition-all shadow-md shadow-red-100"
+            >
+              <FiTrash2 size={13} />
+              Yes, disconnect
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
 
 /* plain-english scope descriptions */
 const SCOPES = [
@@ -66,49 +163,42 @@ let nextId = 1;
 const Settings = () => {
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [confirmId, setConfirmId] = useState(null); // id of account pending disconnect
-  const [settingPrimaryId, setPrimaryId] = useState(null);
+  // Store the full account object to show email in modal
+  const [pendingDisconnect, setPendingDisconnect] = useState(null);
 
-  const primaryAccount =
-    accounts.find((a) => a.isPrimary) ?? accounts[0] ?? null;
-
-  const connectGmail = () => {
-    setLoading(true);
-    setTimeout(() => {
-      const id = nextId++;
-      const emails = [
-        "yashvardhan@gmail.com",
-        "work.yash@gmail.com",
-        "outreach.team@gmail.com",
-        "newsletter@gmail.com",
-      ];
-      const email = emails[(id - 1) % emails.length];
-      setAccounts((prev) => {
-        const isFirst = prev.length === 0;
-        return [
-          ...prev,
-          { id, email, isPrimary: isFirst, connectedAt: new Date() },
-        ];
-      });
-      setLoading(false);
-    }, 1600);
+  const handleConnectGmail = () => {
+    const token = localStorage.getItem("token");
+    window.location.href = `http://localhost:5001/api/gmail/connect?token=${token}`;
   };
 
-  const disconnect = (id) => {
-    setAccounts((prev) => {
-      const remaining = prev.filter((a) => a.id !== id);
-      // if we removed the primary and others exist, promote first
-      const wasRemoved = prev.find((a) => a.id === id);
-      if (wasRemoved?.isPrimary && remaining.length > 0) {
-        remaining[0] = { ...remaining[0], isPrimary: true };
-      }
-      return remaining;
-    });
-    setConfirmId(null);
+  const handleFetchGmailAccounts = async () => {
+    try {
+      const result = await getGmailAccounts();
+      const formatted = result.data.map((acc) => ({
+        id: acc.userId || nextId++, // Use actual ID or fallback to generated one
+        email: acc.email,
+        connectedAt: new Date(acc.createdAt),
+        isPrimary: acc.isPrimary,
+      }));
+      setAccounts(formatted);
+    } catch (error) {
+      toast.error("Failed to fetch Gmail accounts: " + error);
+    }
   };
 
-  const makePrimary = (id) => {
-    setAccounts((prev) => prev.map((a) => ({ ...a, isPrimary: a.id === id })));
+  console.log(accounts, "accounts in settings page-------------------");
+
+  useEffect(() => {
+    handleFetchGmailAccounts();
+  }, []);
+
+  const disconnect = async () => {
+    console.log("Disconnecting account:", pendingDisconnect);
+    if (!pendingDisconnect) return;
+    await deleteGmailAccount(pendingDisconnect.id, pendingDisconnect.email);
+    await handleFetchGmailAccounts();
+    toast.success(`${pendingDisconnect.email} disconnected successfully.`);
+    setPendingDisconnect(null);
   };
 
   const fmtDate = (d) =>
@@ -119,224 +209,176 @@ const Settings = () => {
     });
 
   return (
-    <div className="flex flex-col gap-6 w-full">
-      {/* ── Connected accounts ── */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden w-full">
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl border border-slate-200 bg-white flex items-center justify-center shadow-sm flex-shrink-0">
-              <GoogleIcon size={18} />
+    <>
+      {/* Disconnect confirmation modal */}
+      <DisconnectModal
+        account={pendingDisconnect}
+        onConfirm={disconnect}
+        onCancel={() => setPendingDisconnect(null)}
+      />
+
+      <div className="flex flex-col gap-6 w-full">
+        {/* ── Connected accounts ── */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden w-full">
+          {/* Header */}
+          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl border border-slate-200 bg-white flex items-center justify-center shadow-sm flex-shrink-0">
+                <GoogleIcon size={18} />
+              </div>
+              <div>
+                <p className="text-[13.5px] font-bold text-slate-900 leading-tight">
+                  Gmail Accounts
+                </p>
+                <p className="text-[11.5px] text-slate-400">
+                  {accounts.length === 0
+                    ? "No accounts connected yet"
+                    : `${accounts.length} account${accounts.length > 1 ? "s" : ""} connected`}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-[13.5px] font-bold text-slate-900 leading-tight">
-                Gmail Accounts
+          </div>
+
+          {/* Empty state */}
+          {accounts.length === 0 && !loading && (
+            <div className="flex flex-col items-center gap-4 py-12 px-6 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center">
+                <FiMail className="text-slate-300" size={24} />
+              </div>
+              <div>
+                <p className="text-[14px] font-bold text-slate-900 mb-1">
+                  No Gmail accounts connected
+                </p>
+                <p className="text-[12.5px] text-slate-400 max-w-xs leading-relaxed">
+                  Connect a Gmail account to start sending outreach emails and
+                  tracking replies.
+                </p>
+              </div>
+              <button
+                onClick={handleConnectGmail}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-bold bg-indigo-500 text-white hover:bg-indigo-600 active:scale-95 transition-all shadow-md shadow-indigo-200"
+              >
+                <GoogleIcon size={14} />
+                Sign in with Google
+              </button>
+            </div>
+          )}
+
+          {/* Connecting spinner */}
+          {loading && accounts.length === 0 && (
+            <div className="flex flex-col items-center gap-3 py-12">
+              <div className="w-11 h-11 rounded-2xl bg-indigo-50 flex items-center justify-center">
+                <FiRefreshCw
+                  className="text-indigo-500 animate-spin"
+                  size={18}
+                />
+              </div>
+              <p className="text-[13px] font-semibold text-slate-700">
+                Opening Google sign-in…
               </p>
               <p className="text-[11.5px] text-slate-400">
-                {accounts.length === 0
-                  ? "No accounts connected yet"
-                  : `${accounts.length} account${accounts.length > 1 ? "s" : ""} connected`}
+                Complete authorization in the popup window
               </p>
             </div>
-          </div>
+          )}
 
-          {/* <button
-            onClick={connectGmail}
-            disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-[12.5px] font-bold bg-indigo-500 text-white hover:bg-indigo-600 active:scale-95 transition-all shadow-md shadow-indigo-200 disabled:opacity-60 disabled:cursor-not-allowed flex-shrink-0"
-          >
-            {loading
-              ? <FiRefreshCw size={13} className="animate-spin" />
-              : <FiPlus size={13} />}
-            {loading ? "Connecting…" : "Add Gmail account"}
-          </button> */}
-        </div>
-
-        {/* Empty state */}
-        {accounts.length === 0 && !loading && (
-          <div className="flex flex-col items-center gap-4 py-12 px-6 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center">
-              <FiMail className="text-slate-300" size={24} />
-            </div>
-            <div>
-              <p className="text-[14px] font-bold text-slate-900 mb-1">
-                No Gmail accounts connected
-              </p>
-              <p className="text-[12.5px] text-slate-400 max-w-xs leading-relaxed">
-                Connect a Gmail account to start sending outreach emails and
-                tracking replies.
-              </p>
-            </div>
-            <button
-              onClick={connectGmail}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-bold bg-indigo-500 text-white hover:bg-indigo-600 active:scale-95 transition-all shadow-md shadow-indigo-200"
-            >
-              <GoogleIcon size={14} />
-              Sign in with Google
-            </button>
-          </div>
-        )}
-
-        {/* Connecting spinner inline */}
-        {loading && accounts.length === 0 && (
-          <div className="flex flex-col items-center gap-3 py-12">
-            <div className="w-11 h-11 rounded-2xl bg-indigo-50 flex items-center justify-center">
-              <FiRefreshCw className="text-indigo-500 animate-spin" size={18} />
-            </div>
-            <p className="text-[13px] font-semibold text-slate-700">
-              Opening Google sign-in…
-            </p>
-            <p className="text-[11.5px] text-slate-400">
-              Complete authorization in the popup window
-            </p>
-          </div>
-        )}
-
-        {/* Account list */}
-        {accounts.length > 0 && (
-          <div className="divide-y divide-slate-50">
-            {accounts.map((acc, idx) => (
-              <div
-                key={acc.id}
-                className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50/60 transition-colors"
-              >
-                {/* Avatar */}
+          {/* Account list */}
+          {accounts.length > 0 && (
+            <div className="divide-y divide-slate-50">
+              {accounts.map((acc, idx) => (
                 <div
-                  className={`w-10 h-10 rounded-full bg-gradient-to-br ${AVATAR_COLORS[idx % AVATAR_COLORS.length]} flex items-center justify-center text-white text-[14px] font-extrabold flex-shrink-0`}
+                  key={acc.id}
+                  className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50/60 transition-colors"
                 >
-                  {acc.email[0].toUpperCase()}
-                </div>
+                  {/* Avatar */}
+                  <div
+                    className={`w-10 h-10 rounded-full bg-gradient-to-br ${AVATAR_COLORS[idx % AVATAR_COLORS.length]} flex items-center justify-center text-white text-[14px] font-extrabold flex-shrink-0`}
+                  >
+                    {acc.email[0].toUpperCase()}
+                  </div>
 
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
                     <p className="text-[13.5px] font-semibold text-slate-900 truncate">
                       {acc.email}
                     </p>
-                    {acc.isPrimary && (
-                      <span className="flex items-center gap-1 text-[10px] font-bold text-indigo-500 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full flex-shrink-0">
-                        <FiStar size={9} />
-                        Primary
-                      </span>
-                    )}
+                    <p className="text-[11.5px] text-slate-400 mt-0.5">
+                      Connected {fmtDate(acc.connectedAt)}
+                    </p>
                   </div>
-                  <p className="text-[11.5px] text-slate-400 mt-0.5">
-                    Connected {fmtDate(acc.connectedAt)}
-                  </p>
-                </div>
 
-                {/* Actions */}
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    Active
-                  </span>
+                  {/* Actions */}
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <span className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      Active
+                    </span>
 
-                  {/* Make primary */}
-                  {!acc.isPrimary && (
+                    {/* Disconnect — now opens modal */}
                     <button
-                      onClick={() => makePrimary(acc.id)}
-                      className="px-3 py-1.5 text-[11.5px] font-semibold text-slate-500 border border-slate-200 rounded-lg hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
-                    >
-                      Set primary
-                    </button>
-                  )}
-
-                  {/* Disconnect */}
-                  {confirmId === acc.id ? (
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        onClick={() => setConfirmId(null)}
-                        className="px-2.5 py-1.5 text-[11.5px] font-semibold text-slate-500 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={() => disconnect(acc.id)}
-                        className="flex items-center gap-1 px-2.5 py-1.5 text-[11.5px] font-bold text-red-500 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors"
-                      >
-                        <FiTrash2 size={11} /> Remove
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => setConfirmId(acc.id)}
+                      onClick={() => setPendingDisconnect(acc)}
                       className="p-2 rounded-lg border border-slate-200 text-slate-400 hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all"
+                      title="Disconnect account"
                     >
                       <FiTrash2 size={13} />
                     </button>
-                  )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* ── What we access ── */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden w-full">
+          <div className="px-5 py-4 border-b border-slate-100">
+            <p className="text-[13.5px] font-bold text-slate-900 leading-tight">
+              What we access
+            </p>
+            <p className="text-[11.5px] text-slate-400 mt-0.5">
+              Plain English — exactly what Outreach Manager can and cannot do
+              with your Gmail.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-3 divide-x divide-slate-100">
+            {SCOPES.map(({ Icon, title, desc, color }) => (
+              <div key={title} className="flex flex-col gap-3 p-5">
+                <div
+                  className={`w-9 h-9 rounded-xl border flex items-center justify-center flex-shrink-0 ${color}`}
+                >
+                  <Icon size={16} />
+                </div>
+                <div>
+                  <p className="text-[13px] font-bold text-slate-900 mb-1">
+                    {title}
+                  </p>
+                  <p className="text-[12px] text-slate-400 leading-relaxed">
+                    {desc}
+                  </p>
                 </div>
               </div>
             ))}
           </div>
-        )}
 
-        {/* Primary account tip */}
-        {accounts.length > 1 && (
-          <div className="flex items-start gap-2.5 px-5 py-3 bg-indigo-50/60 border-t border-indigo-100">
-            <FiAlertCircle
-              size={13}
-              className="text-indigo-400 flex-shrink-0 mt-0.5"
-            />
-            <p className="text-[11.5px] text-indigo-500 leading-relaxed">
-              <span className="font-bold">Primary account</span> is used by
-              default for all campaigns. You can change it per campaign when
-              composing.
+          <div className="flex items-center gap-2 px-5 py-3 bg-slate-50 border-t border-slate-100">
+            <FiShield size={12} className="text-slate-400 flex-shrink-0" />
+            <p className="text-[11px] text-slate-400">
+              Authorization uses Google OAuth 2.0. You can revoke access anytime
+              at{" "}
+              <a
+                href="https://myaccount.google.com/permissions"
+                target="_blank"
+                rel="noreferrer"
+                className="text-indigo-500 font-semibold underline underline-offset-2"
+              >
+                myaccount.google.com/permissions
+              </a>
             </p>
           </div>
-        )}
-      </div>
-
-      {/* ── What we access ── */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden w-full">
-        <div className="px-5 py-4 border-b border-slate-100">
-          <p className="text-[13.5px] font-bold text-slate-900 leading-tight">
-            What we access
-          </p>
-          <p className="text-[11.5px] text-slate-400 mt-0.5">
-            Plain English — exactly what Outreach Manager can and cannot do with
-            your Gmail.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-3 divide-x divide-slate-100">
-          {SCOPES.map(({ Icon, title, desc, color }) => (
-            <div key={title} className="flex flex-col gap-3 p-5">
-              <div
-                className={`w-9 h-9 rounded-xl border flex items-center justify-center flex-shrink-0 ${color}`}
-              >
-                <Icon size={16} />
-              </div>
-              <div>
-                <p className="text-[13px] font-bold text-slate-900 mb-1">
-                  {title}
-                </p>
-                <p className="text-[12px] text-slate-400 leading-relaxed">
-                  {desc}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-2 px-5 py-3 bg-slate-50 border-t border-slate-100">
-          <FiShield size={12} className="text-slate-400 flex-shrink-0" />
-          <p className="text-[11px] text-slate-400">
-            Authorization uses Google OAuth 2.0. You can revoke access anytime
-            at{" "}
-            <a
-              href="https://myaccount.google.com/permissions"
-              target="_blank"
-              rel="noreferrer"
-              className="text-indigo-500 font-semibold underline underline-offset-2"
-            >
-              myaccount.google.com/permissions
-            </a>
-          </p>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

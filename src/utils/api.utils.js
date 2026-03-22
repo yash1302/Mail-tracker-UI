@@ -1,6 +1,6 @@
 import { apiConfig } from "./api.config";
 import axiosclient from "./axios-client";
-const { USER_SINGUP, USER_LOGIN } = apiConfig;
+const { USER_SINGUP, USER_LOGIN, GMAIL_ACCOUNT } = apiConfig;
 
 export const signupUser = async (userData) => {
   try {
@@ -19,6 +19,25 @@ export const loginUser = async (userData) => {
     return response.data;
   } catch (error) {
     console.log(error, "error in loginUser api--------");
+    throw error.response.data.message;
+  }
+};
+export const getGmailAccounts = async () => {
+  try {
+    const response = await axiosclient.get(GMAIL_ACCOUNT);
+    return response.data;
+  } catch (error) {
+    throw error.response.data.message;
+  }
+};
+
+export const deleteGmailAccount = async (userId, email) => {
+  try {
+    const response = await axiosclient.delete(GMAIL_ACCOUNT, {
+      data: { userId, email },
+    });
+    return response.data;
+  } catch (error) {
     throw error.response.data.message;
   }
 };
