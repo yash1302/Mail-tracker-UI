@@ -14,7 +14,10 @@ import {
 import DraftPicker from "./DraftPicker";
 import RecipientInput from "./RecipientInput";
 import AttachmentUpload from "./AttachmentUpload";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
+import { userContext } from "../../../context/ContextProvider";
+import { sendEmail } from "../../../utils/api.utils";
+import { toast } from "react-toastify";
 
 const EmailFormCard = ({
   setSubject,
@@ -131,21 +134,21 @@ const EmailFormCard = ({
       .join("");
   };
 
-  const handleSend = () => {
-    const targets = [
-      ...recipients,
-      ...(recipientInput.trim() ? [recipientInput.trim()] : []),
-    ];
+  const handleSend = async () => {
+    try {
+      const targets = [
+        ...recipients,
+        ...(recipientInput.trim() ? [recipientInput.trim()] : []),
+      ];
 
-    if (!targets.length || !subject.trim() || !body.trim()) return;
+      if (!targets.length || !subject.trim() || !body.trim()) return;
 
-    setSending(true);
+      setSending(true);
 
-    setTimeout(() => {
       const htmlBody = convertToHTML(body);
-      const newMails = targets.map((email) => ({
-        gmailAccountId: "1234",
-        to: email
+      const newMails = targets.map((t) => ({
+        gmailAccountId: accounts?.[0]?.gmailAccountId,
+        to: t
           .split("@")[0]
           .replace(/[._]/g, " ")
           .replace(/\b\w/g, (c) => c.toUpperCase()),
@@ -153,27 +156,47 @@ const EmailFormCard = ({
         bcc: bccRecipients,
         subject,
         body: htmlBody,
-        userId: "u123",
+        userId: accounts?.[0]?.id,
       }));
 
-      console.log("New mails:", newMails);
+      const formData = new FormData();
+
+      formData.append("gmailAccountId", accounts?.[0]?.gmailAccountId);
+      formData.append("userId", accounts?.[0]?.id);
+      formData.append("subject", subject);
+      formData.append("body", htmlBody);
+
+      formData.append("to", JSON.stringify(targets));
+      formData.append("cc", JSON.stringify(ccRecipients));
+      formData.append("bcc", JSON.stringify(bccRecipients));
+
+      const attachmentIds = attachments
+        ?.filter((a) => a.id)
+        .map((a) => a.id);
+
+      formData.append("attachmentIds", JSON.stringify(attachmentIds || []));
+
+      const newFiles = attachments?.filter((a) => a instanceof File);
+
+      newFiles?.forEach((file) => {
+        formData.append("files", file);
+      });
+
+      await sendEmail(formData);
 
       setSentList((p) => [...newMails, ...p]);
-
-      setSending(false);
       setSentSuccess(true);
-
       setRecipients([]);
       setRecipientInput("");
       setSubject("");
       setBody("");
       setAttachments([]);
-
-      setTimeout(() => {
-        setSentSuccess(false);
-        // setTab("sent");
-      }, 1800);
-    }, 1400);
+    } catch (error) {
+      console.error("Error sending email:", error);
+      toast.error("Failed to send email. Please try again.");
+    } finally {
+      setSending(false);
+    }
   };
 
   useEffect(() => {
@@ -331,35 +354,28 @@ const EmailFormCard = ({
             )}
           </span>
 
-          {sentSuccess ? (
-            <div className="flex items-center gap-[8px] px-[18px] py-[8px] rounded-[10px] bg-emerald-100 text-emerald-900 text-[13px] font-semibold">
-              <FiCheck size={14} />
-              {allTo.length > 1 ? `Sent to ${allTo.length}!` : "Sent!"}
-            </div>
-          ) : (
-            <button
-              onClick={handleSend}
-              disabled={!canSend || sending}
-              className={`flex items-center gap-[7px] px-[16px] py-[8px] rounded-[10px] text-[13px] font-semibold transition
+          <button
+            onClick={handleSend}
+            disabled={!canSend || sending}
+            className={`flex items-center gap-[7px] px-[16px] py-[8px] rounded-[10px] text-[13px] font-semibold transition
               ${
                 canSend
                   ? "bg-indigo-500 text-white hover:bg-indigo-600"
                   : "bg-indigo-500 text-white opacity-45 cursor-not-allowed"
               }`}
-            >
-              {sending ? (
-                <>
-                  <FiRefreshCw size={13} className="animate-spin" />
-                  Sending…
-                </>
-              ) : (
-                <>
-                  <FiSend size={13} />
-                  {allTo.length > 1 ? `Send to ${allTo.length}` : "Send Email"}
-                </>
-              )}
-            </button>
-          )}
+          >
+            {sending ? (
+              <>
+                <FiRefreshCw size={13} className="animate-spin" />
+                Sending…
+              </>
+            ) : (
+              <>
+                <FiSend size={13} />
+                {allTo.length > 1 ? `Send to ${allTo.length}` : "Send Email"}
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>

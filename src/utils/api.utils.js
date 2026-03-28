@@ -1,6 +1,6 @@
 import { apiConfig } from "./api.config";
 import axiosclient from "./axios-client";
-const { USER_SINGUP, USER_LOGIN, GMAIL_ACCOUNT } = apiConfig;
+const { USER_SINGUP, USER_LOGIN, GMAIL_ACCOUNT, SEND_MAIL } = apiConfig;
 
 export const signupUser = async (userData) => {
   try {
@@ -35,6 +35,20 @@ export const deleteGmailAccount = async (userId, email) => {
   try {
     const response = await axiosclient.delete(GMAIL_ACCOUNT, {
       data: { userId, email },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response.data.message;
+  }
+};
+
+export const sendEmail = async (emailData) => {
+  try {
+    console.log("Sending email with data:", emailData);
+    const response = await axiosclient.post(SEND_MAIL, emailData, {
+      headers: {
+        "Content-Type": "application/form-data",
+      },
     });
     return response.data;
   } catch (error) {
