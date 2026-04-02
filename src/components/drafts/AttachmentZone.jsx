@@ -71,7 +71,7 @@ const AttachmentZone = ({ attachments, onChange }) => {
               {isImg(f) ? (
                 <img
                   src={URL.createObjectURL(f)}
-                  alt={f.name}
+                  alt={f.filename}
                   className="w-[30px] h-[30px] object-cover rounded-md border border-slate-200 flex-shrink-0"
                 />
               ) : (
@@ -82,7 +82,7 @@ const AttachmentZone = ({ attachments, onChange }) => {
 
               <div className="flex-1 min-w-0">
                 <p className="text-[12.5px] font-semibold text-slate-900 truncate">
-                  {f.name}
+                  {f.filename}
                 </p>
 
                 <p className="text-[10.5px] text-slate-400">

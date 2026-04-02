@@ -19,7 +19,7 @@ const AttachmentList = ({ attachments }) => {
           {isImg(f) ? <FiImage size={13} /> : <FiFile size={13} />}
 
           <span className="max-w-[130px] truncate">
-            {f.name}
+            {f.filename}
           </span>
 
           <span className="text-slate-300">

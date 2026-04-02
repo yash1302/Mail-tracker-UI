@@ -1,11 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { FiPaperclip, FiPlus } from "react-icons/fi";
 import DraftModal from "../components/drafts/DraftModal";
-import {
-  createDraftApi,
-  getDraftsApi,
-  updateDraftApi,
-} from "../utils/api.utils";
+import { createDraftApi, getDraftsApi, updateDraftApi } from "../utils/api.utils";
 import { userContext } from "../context/ContextProvider";
 import { convertToHtml } from "../utils/fileUtils";
 
@@ -19,8 +15,6 @@ const Drafts = () => {
   const [body, setBody] = useState("");
   const [attachments, setAttachments] = useState([]);
   const [title, setTitle] = useState("");
-  const [existingAttachments, setExistingAttachments] = useState([]);
-  const [newFiles, setNewFiles] = useState([]);
 
   const { accounts } = useContext(userContext);
 
@@ -43,8 +37,6 @@ const Drafts = () => {
     setSubject(row.subject);
     setBody(row.body);
     setAttachments(row.attachments || []);
-    setExistingAttachments(row.attachments || []);
-    setNewFiles([]);
     setEditIdx(row.id);
     setModalMode("view");
     setModal(true);
@@ -63,10 +55,15 @@ const Drafts = () => {
       formData.append("gmailAccountId", accounts[0].gmailAccountId);
       formData.append("userId", accounts[0].id);
 
-      formData.append(
-        "existingAttachments",
-        JSON.stringify(existingAttachments.map((a) => ({ _id: a._id }))),
-      );
+      const existing = attachments.filter((a) => !(a instanceof File));
+      const newFiles = attachments.filter((a) => a instanceof File);
+
+      if (modalMode === "edit") {
+        formData.append(
+          "existingAttachments",
+          JSON.stringify(existing.map((a) => ({ _id: a._id }))),
+        );
+      }
 
       newFiles.forEach((file) => {
         formData.append("files", file);
@@ -104,16 +101,6 @@ const Drafts = () => {
     } catch (err) {
       console.error("Fetch drafts error:", err);
     }
-  };
-
-  const handleAttachmentsChange = (files) => {
-    setNewFiles(files);
-  };
-
-  const handleRemoveAttachment = (id) => {
-    const updated = existingAttachments.filter((a) => a._id !== id);
-    setExistingAttachments(updated);
-    setAttachments(updated);
   };
 
   useEffect(() => {
@@ -223,7 +210,7 @@ const Drafts = () => {
           setTitle={setTitle}
           setSubject={setSubject}
           setBody={setBody}
-          setAttachments={handleAttachmentsChange}
+          setAttachments={setAttachments}
           close={close}
           save={save}
           setModalMode={setModalMode}
