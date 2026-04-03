@@ -1,40 +1,78 @@
-import { FiSearch, FiCheck } from "react-icons/fi";
+import { FiSearch, FiCheck, FiRefreshCw } from "react-icons/fi";
 import FilterTabs from "./FilterTabs";
 import FollowUpRow from "./FollowUpRow";
+import { useContext, useState } from "react";
+import FollowupModal from "../modals/FollowupModal";
+import { toast } from "react-toastify";
+import { checkRepliesApi } from "../../utils/api.utils";
+import { userContext } from "../../context/ContextProvider";
 
-const FollowUpQueue = ({
-  filter,
-  setFilter,
-  counts,
-  search,
-  setSearch,
-  visible,
-  openCompose,
-  snooze,
-  dismiss,
-  setQueue,
-}) => {
+const FollowUpQueue = ({ counts, queue, setQueue, handlegetFollowUpsApi }) => {
+  const [filter, setFilter] = useState("All");
+  const [search, setSearch] = useState("");
+  const [activeModal, setActiveModal] = useState(null);
+  const { accounts } = useContext(userContext);
+
+  const dismiss = (id) =>
+    setQueue((q) =>
+      q.map((x) => (x.id === id ? { ...x, followUpStatus: "Dismissed" } : x)),
+    );
+  const snooze = (id) =>
+    setQueue((q) =>
+      q.map((x) => (x.id === id ? { ...x, followUpStatus: "Snoozed" } : x)),
+    );
+
+  const openCompose = (row) => {
+    setActiveModal(row);
+  };
+
+  const visible = queue.filter((x) => {
+    const matchF = filter === "All" || x.status === filter;
+    const q = search.toLowerCase();
+    return (
+      matchF &&
+      (x.to[0].toLowerCase().includes(q) ||
+        x.email[0].toLowerCase().includes(q) ||
+        x.subject[0].toLowerCase().includes(q))
+    );
+  });
+
+  const handleRefreshReplies = async () => {
+    try {
+      await checkRepliesApi({
+        userId: accounts[0]?.id,
+        gmailAccountId: accounts[0]?.gmailAccountId,
+      });
+      toast.success("Checked for new replies! Updating the queue...");
+      handlegetFollowUpsApi();
+    } catch (error) {
+      toast.error("Failed to refresh replies. Please try again.");
+    }
+  };
   return (
     <div className="fade-up d1 bg-white rounded-[14px] border border-slate-100 overflow-hidden shadow-sm">
-
       {/* Toolbar */}
       <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 gap-3">
+        <FilterTabs filter={filter} setFilter={setFilter} counts={counts} />
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleRefreshReplies}
+            className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-md border border-indigo-200 text-indigo-600 bg-indigo-50 hover:bg-indigo-100"
+          >
+            <FiRefreshCw size={12} />
+            Refresh
+          </button>
 
-        <FilterTabs
-          filter={filter}
-          setFilter={setFilter}
-          counts={counts}
-        />
-
-        {/* Search */}
-        <div className="flex items-center gap-2 border border-slate-200 rounded-lg px-3 py-1.5 bg-gray-50">
-          <FiSearch size={13} className="text-slate-400" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search…"
-            className="bg-transparent outline-none text-[12.5px] text-gray-700 w-40"
-          />
+          {/* Search */}
+          <div className="flex items-center gap-2 border border-slate-200 rounded-lg px-3 py-1.5 bg-gray-50">
+            <FiSearch size={13} className="text-slate-400" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search…"
+              className="bg-transparent outline-none text-[12.5px] text-gray-700 w-40"
+            />
+          </div>
         </div>
       </div>
 
@@ -45,9 +83,7 @@ const FollowUpQueue = ({
             <FiCheck size={22} />
           </div>
 
-          <p className="text-sm font-semibold text-slate-400">
-            All clear!
-          </p>
+          <p className="text-sm font-semibold text-slate-400">All clear!</p>
 
           <p className="text-[13px] text-slate-300">
             No follow-ups in this filter. Send more emails to build your queue.
@@ -71,6 +107,12 @@ const FollowUpQueue = ({
             />
           ))}
         </div>
+      )}
+      {activeModal && (
+        <FollowupModal
+          lead={activeModal}
+          onClose={() => setActiveModal(null)}
+        />
       )}
     </div>
   );

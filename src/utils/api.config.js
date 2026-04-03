@@ -11,4 +11,6 @@ export const apiConfig = {
   DOWNLOAD_ATTACHMENT: "/api/gmail/attachment",
   DRAFTS: "/api/draft/",
   UPDATE_DRAFT: "/api/draft/:id",
+  GET_FOLLOWUPS: "/api/followup/list",
+  CHECK_REPLIES: "/api/followup/check-replies",
 };

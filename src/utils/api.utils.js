@@ -10,6 +10,8 @@ const {
   DOWNLOAD_ATTACHMENT,
   DRAFTS,
   UPDATE_DRAFT,
+  GET_FOLLOWUPS,
+  CHECK_REPLIES,
 } = apiConfig;
 
 export const signupUser = async (userData) => {
@@ -61,6 +63,7 @@ export const sendEmail = async (emailData) => {
     });
     return response.data;
   } catch (error) {
+    console.log("Error in sendEmail API:", error);
     throw error.response.data.message;
   }
 };
@@ -158,5 +161,25 @@ export const updateDraftApi = async (draftId, formData) => {
     return response.data;
   } catch (error) {
     throw error?.response?.data?.message || "Failed to update draft";
+  }
+};
+
+export const getFollowUpsApi = async (userId, gmailAccountId) => {
+  try {
+    const response = await axiosclient.get(GET_FOLLOWUPS, {
+      params: { userId, gmailAccountId },
+    });
+    return response.data;
+  } catch (error) {
+    throw error?.response?.data?.message || "Failed to fetch follow-ups";
+  }
+};
+
+export const checkRepliesApi = async (body) => {
+  try {
+    const response = await axiosclient.post(CHECK_REPLIES, body);
+    return response.data;
+  } catch (error) {
+    throw error?.response?.data?.message || "Failed to check replies";
   }
 };

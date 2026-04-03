@@ -17,7 +17,7 @@ const FollowUpRow = ({
   dismiss,
   setQueue,
 }) => {
-  const hue = (row.to.charCodeAt(0) * 17) % 360;
+  const hue = (row.to[0].charCodeAt(0) * 17) % 360;
 
   const urgency =
     row.daysSince >= 14
@@ -33,7 +33,7 @@ const FollowUpRow = ({
       ? "text-amber-500"
       : "text-indigo-500";
 
-  const fStatus = row.followUpStatus;
+  const fStatus = row.status;
 
   return (
     <div
@@ -49,7 +49,7 @@ const FollowUpRow = ({
           color: `hsl(${hue},45%,35%)`,
         }}
       >
-        {row.to[0]}
+        {row.to[0][0]}
       </div>
 
       {/* Info */}
@@ -58,10 +58,6 @@ const FollowUpRow = ({
           <p className="text-[13.5px] font-bold text-slate-900">
             {row.to}
           </p>
-
-          <span className="text-[11px] text-slate-400">
-            {row.email}
-          </span>
 
           {fStatus === "Sent" && (
             <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-[2px] rounded-full">
@@ -83,7 +79,7 @@ const FollowUpRow = ({
         <div className="flex items-center gap-3 text-[11.5px] mt-1">
 
           <span className={`flex items-center gap-1 font-semibold ${urgencyText}`}>
-            <FiClock size={11} /> {row.daysSince} days since sent
+            <FiClock size={11} /> {row.daysSince} days since last sent
           </span>
 
           <span className="flex items-center gap-1 text-slate-400">
@@ -91,7 +87,7 @@ const FollowUpRow = ({
           </span>
 
           <span className="text-slate-300">
-            · Original: {row.date}
+            · Original: {row.sentAt.split("T")[0]}
           </span>
         </div>
       </div>
