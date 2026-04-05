@@ -1,7 +1,7 @@
 import { FiSend, FiRefreshCw, FiMessageSquare, FiTrendingUp, FiEye } from "react-icons/fi";
 import AnalyticsCard from "./AnalyticsCard";
 
-const AnalyticsCards = ({ kpi }) => {
+const AnalyticsCards = ({ kpi, onRefresh, isRefreshing = false }) => {
   const {
     totalSent = 0,
     totalReplied = 0,
@@ -9,6 +9,7 @@ const AnalyticsCards = ({ kpi }) => {
     totalClicked = 0,
     clickRate = 0,
     interestedLeads = 0,
+    noResponse = 0,
     uniqueFollowedUp = 0,
     followupNeeded = 0,
     totalDrafts = 0,
@@ -62,24 +63,39 @@ const AnalyticsCards = ({ kpi }) => {
       bg: "#d1fae5",
       stats: [
         { label: "Interested, No Reply", value: interestedLeads },
-        { label: "No Response", value: totalSent - totalReplied - totalClicked < 0 ? 0 : totalSent - totalReplied - totalClicked },
+        { label: "No Response", value: noResponse < 0 ? 0 : noResponse },
       ],
     },
   ];
 
   return (
-    <div className="grid grid-cols-5 gap-3 shrink-0">
-      {cardData.map((card, index) => (
-        <AnalyticsCard
-          key={index}
-          index={index}
-          title={card.title}
-          Icon={card.Icon}
-          color={card.color}
-          bg={card.bg}
-          stats={card.stats}
-        />
-      ))}
+    <div className="flex flex-col gap-2 shrink-0">
+      {/* Refresh button row */}
+      <div className="flex justify-end">
+        <button
+          onClick={onRefresh}
+          disabled={isRefreshing}
+          className="flex items-center gap-[6px] px-3 py-1.5 rounded-md border border-indigo-200 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition"
+        >
+          <FiRefreshCw size={12} className={isRefreshing ? "animate-spin" : ""} />
+          {isRefreshing ? "Checking replies…" : "Check Replies"}
+        </button>
+      </div>
+
+      {/* Cards */}
+      <div className="grid grid-cols-5 gap-3">
+        {cardData.map((card, index) => (
+          <AnalyticsCard
+            key={index}
+            index={index}
+            title={card.title}
+            Icon={card.Icon}
+            color={card.color}
+            bg={card.bg}
+            stats={card.stats}
+          />
+        ))}
+      </div>
     </div>
   );
 };

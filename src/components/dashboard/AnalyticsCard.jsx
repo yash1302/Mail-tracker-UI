@@ -18,35 +18,29 @@ const AnalyticsCard = ({ title, Icon, color, bg, stats, index }) => {
       <div className="flex items-center justify-between mb-[10px]">
         <div className="flex items-center gap-[7px]">
           <div
-            className="w-[28px] h-[28px] rounded-[8px] flex items-center justify-center"
-            style={{
-              background: bg,
-              color,
-            }}
+            className="w-[28px] h-[28px] rounded-[8px] flex items-center justify-center shrink-0"
+            style={{ background: bg, color }}
           >
             <Icon size={13} />
           </div>
-
-          <span className="text-[12px] font-semibold text-gray-700">
+          <span className="text-[12px] font-semibold text-gray-700 leading-tight">
             {title}
           </span>
         </div>
-
         <Sparkbar color={color} />
       </div>
 
-      {/* stats */}
-      <div className="grid grid-cols-2 gap-[8px]">
+      {/* stats — fixed height boxes so values always align */}
+      <div className="grid grid-cols-2 gap-[6px]">
         {stats.map((stat, i) => (
           <div
             key={i}
-            className="bg-[#fafafa] border border-slate-100 rounded-[8px] px-[9px] py-[7px]"
+            className="bg-[#fafafa] border border-slate-100 rounded-[8px] px-[9px] py-[8px] flex flex-col justify-between min-h-[58px]"
           >
-            <p className="text-[10px] text-slate-400 font-medium mb-[2px]">
+            <p className="text-[10px] text-slate-400 font-medium leading-tight line-clamp-2">
               {stat.label}
             </p>
-
-            <span className="text-[18px] font-bold text-slate-900 leading-none font-mono">
+            <span className="text-[20px] font-bold text-slate-900 leading-none font-mono mt-[4px]">
               {stat.value}
             </span>
           </div>

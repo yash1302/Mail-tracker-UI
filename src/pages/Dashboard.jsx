@@ -5,7 +5,7 @@ import FollowupQueue from "../components/dashboard/FollowupQueue";
 import OutreachTable from "../components/common/OutreachTable.jsx";
 import EmailDetailModal from "../components/modals/EmailDetailModal";
 import FollowupModal from "../components/modals/FollowupModal";
-import { getSentEmails, getDashboardKPI } from "../utils/api.utils";
+import { getSentEmails, getDashboardKPI, checkRepliesApi } from "../utils/api.utils";
 import { userContext } from "../context/ContextProvider";
 import { toast } from "react-toastify";
 
@@ -17,6 +17,7 @@ const Dashboard = () => {
   const [followupLead, setFollowupLead] = useState(null);
   const [emails, setEmails] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [kpi, setKpi] = useState({
     totalSent: 0,
     totalReplied: 0,
@@ -59,9 +60,26 @@ const Dashboard = () => {
     }
   };
 
-  const refreshAll = () => {
-    handleGetKpi();
-    handleGetSentEmails();
+  const refreshAll = async () => {
+    await Promise.all([handleGetKpi(), handleGetSentEmails()]);
+  };
+
+  // ← Check replies button handler (same as FollowUpQueue)
+  const handleCheckReplies = async () => {
+    if (!accounts?.length) return;
+    setIsRefreshing(true);
+    try {
+      await checkRepliesApi({
+        userId: accounts[0].id,
+        gmailAccountId: accounts[0].gmailAccountId,
+      });
+      toast.success("Checked for new replies! Updating dashboard...");
+      await refreshAll();
+    } catch (error) {
+      toast.error("Failed to check replies. Please try again.");
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   useEffect(() => {
@@ -85,7 +103,12 @@ const Dashboard = () => {
 
   return (
     <div className="flex flex-col gap-4 h-full min-h-0 font-sans">
-      <AnalyticsCards kpi={kpi} />
+      {/* KPI Cards + Refresh button */}
+      <AnalyticsCards
+        kpi={kpi}
+        onRefresh={handleCheckReplies}
+        isRefreshing={isRefreshing}
+      />
 
       <div className="grid grid-cols-[280px_1fr] gap-3 flex-1 min-h-0">
         <FollowupQueue openFollowupModal={setFollowupLead} />
@@ -96,7 +119,7 @@ const Dashboard = () => {
               Recent Outreach
             </h2>
             <button
-              onClick={() => navigate("/sent-mails")}
+              onClick={() => navigate("/send_mail")}
               className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700"
             >
               View all →
