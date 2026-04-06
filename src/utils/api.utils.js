@@ -44,10 +44,10 @@ export const getGmailAccounts = async () => {
   }
 };
 
-export const deleteGmailAccount = async (userId, email) => {
+export const deleteGmailAccount = async (gmailAccountId) => {
   try {
     const response = await axiosclient.delete(GMAIL_ACCOUNT, {
-      data: { userId, email },
+      data: { gmailAccountId },
     });
     return response.data;
   } catch (error) {

@@ -25,10 +25,9 @@ axiosclient.interceptors.request.use(
 axiosclient.interceptors.response.use(
   (response) => response,
   (error) => {
-    const status = error?.response?.data?.statusCode;
-    const url = error?.config?.url;
+    const status = error?.response?.data?.error?.statusCode;
 
-    if (status === 401 && !url.includes("/auth/login")) {
+    if (status === 401) {
       console.error("Unauthorized! Please log in again.");
       toast.error("Session expired. Please log in again.");
       localStorage.clear();

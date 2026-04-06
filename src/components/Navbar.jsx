@@ -10,7 +10,7 @@ const pageTitles = {
     title: "Email Drafts",
     sub: "Create and manage reusable outreach templates.",
   },
-  send: {
+  send_mail: {
     title: "Send Emails",
     sub: "Compose and dispatch outreach campaigns.",
   },

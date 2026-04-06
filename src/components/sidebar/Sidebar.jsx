@@ -12,12 +12,14 @@ import {
 import SidebarItem from "./SidebarItem";
 import SidebarSection from "./SidebarSection";
 import UserProfile from "./UserProfile.jsx";
-import { userContext } from "../../context/ContextProvider.jsx";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { userContext } from "../../context/ContextProvider.jsx";
 
 const Sidebar = ({}) => {
-  const { active, setActive } = useContext(userContext);
+  const location = useLocation();
+  const { setActive } = useContext(userContext);
+  const activeFromPath = location.pathname.split("/")[1];
   const menu = [
     { name: "Dashboard", key: "dashboard", Icon: FiGrid },
     { name: "Drafts", key: "drafts", Icon: FiEdit3 },
@@ -27,8 +29,8 @@ const Sidebar = ({}) => {
   const navigate = useNavigate();
 
   const handleClick = (key) => {
-    setActive(key);
     navigate(`/${key}`);
+    setActive(key);
   };
   return (
     <div className="w-55 h-screen flex flex-col bg-linear-to-b from-slate-900 to-slate-800 border-r border-white/5 sticky top-0">
@@ -55,7 +57,7 @@ const Sidebar = ({}) => {
             key={item.key}
             label={item.name}
             Icon={item.Icon}
-            active={active === item.key}
+            active={activeFromPath === item.key}
             onClick={() => handleClick(item.key)}
           />
         ))}
@@ -66,7 +68,7 @@ const Sidebar = ({}) => {
         <SidebarItem
           label="Settings"
           Icon={FiSettings}
-          active={active === "settings"}
+          active={activeFromPath === "settings"}
           onClick={() => handleClick("settings")}
         />
 

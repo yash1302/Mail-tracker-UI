@@ -13,11 +13,12 @@ const ContextProvider = ({ children }) => {
     try {
       const res = await getGmailAccounts();
       const formatted = res.data.map((acc) => ({
-        id: acc.userId, // Use actual ID or fallback to generated one
+        id: acc.userId,
         email: acc.email,
         gmailAccountId: acc._id,
         connectedAt: new Date(acc.createdAt),
         isPrimary: acc.isPrimary,
+        user: acc.user,
       }));
       setAccounts(formatted);
     } catch (err) {
@@ -26,7 +27,10 @@ const ContextProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    fetchAccounts();
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetchAccounts();
+    }
   }, []);
 
   return (

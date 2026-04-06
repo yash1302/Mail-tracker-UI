@@ -194,15 +194,15 @@ const Login = () => {
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const { setActive } = useContext(userContext);
+  const { setActive, fetchAccounts } = useContext(userContext);
   const navigate = useNavigate();
 
   const onLogin = async () => {
     try {
       console.log("Logging in with:", { email, password });
       const result = await loginUser({ email, password });
-      console.log(result, "result from login api");
       localStorage.setItem("token", result.data);
+      fetchAccounts();
       navigate("/");
       setActive("dashboard");
     } catch (error) {

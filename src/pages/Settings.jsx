@@ -12,6 +12,7 @@ import {
 import { deleteGmailAccount, getGmailAccounts } from "../utils/api.utils";
 import { toast } from "react-toastify";
 import { userContext } from "../context/ContextProvider";
+import { isTokenExpired } from "../utils/fileUtils";
 
 const GoogleIcon = ({ size = 16 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24">
@@ -159,45 +160,30 @@ const AVATAR_COLORS = [
   "from-amber-500 to-orange-400",
 ];
 
-let nextId = 1;
+const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 const Settings = () => {
-  // const [accounts, setAccounts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  // Store the full account object to show email in modal
   const [pendingDisconnect, setPendingDisconnect] = useState(null);
 
   const { accounts, fetchAccounts } = useContext(userContext);
+
   const handleConnectGmail = () => {
     const token = localStorage.getItem("token");
-    window.location.href = `http://localhost:5001/api/gmail/connect?token=${token}`;
+
+    if (!token || isTokenExpired(token)) {
+      toast.error("Session expired. Please login again.");
+      navigate("/");
+
+      return;
+    }
+
+    window.location.href = `${API_URL}api/gmail/connect?token=${token}`;
   };
-
-  // const handleFetchGmailAccounts = async () => {
-  //   try {
-  //     const result = await getGmailAccounts();
-  //     const formatted = result.data.map((acc) => ({
-  //       id: acc.userId || nextId++, // Use actual ID or fallback to generated one
-  //       email: acc.email,
-  //       connectedAt: new Date(acc.createdAt),
-  //       isPrimary: acc.isPrimary,
-  //     }));
-  //     setAccounts(formatted);
-  //   } catch (error) {
-  //     toast.error("Failed to fetch Gmail accounts: " + error);
-  //   }
-  // };
-
-  console.log(accounts, "accounts in settings page-------------------");
-
-  useEffect(() => {
-    fetchAccounts();
-  }, []);
 
   const disconnect = async () => {
     console.log("Disconnecting account:", pendingDisconnect);
     if (!pendingDisconnect) return;
-    await deleteGmailAccount(pendingDisconnect.id, pendingDisconnect.email);
+    await deleteGmailAccount(accounts[0]?.gmailAccountId);
     await fetchAccounts();
     toast.success(`${pendingDisconnect.email} disconnected successfully.`);
     setPendingDisconnect(null);
@@ -242,7 +228,7 @@ const Settings = () => {
           </div>
 
           {/* Empty state */}
-          {accounts.length === 0 && !loading && (
+          {accounts.length === 0 && (
             <div className="flex flex-col items-center gap-4 py-12 px-6 text-center">
               <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center">
                 <FiMail className="text-slate-300" size={24} />
@@ -263,24 +249,6 @@ const Settings = () => {
                 <GoogleIcon size={14} />
                 Sign in with Google
               </button>
-            </div>
-          )}
-
-          {/* Connecting spinner */}
-          {loading && accounts.length === 0 && (
-            <div className="flex flex-col items-center gap-3 py-12">
-              <div className="w-11 h-11 rounded-2xl bg-indigo-50 flex items-center justify-center">
-                <FiRefreshCw
-                  className="text-indigo-500 animate-spin"
-                  size={18}
-                />
-              </div>
-              <p className="text-[13px] font-semibold text-slate-700">
-                Opening Google sign-in…
-              </p>
-              <p className="text-[11.5px] text-slate-400">
-                Complete authorization in the popup window
-              </p>
             </div>
           )}
 

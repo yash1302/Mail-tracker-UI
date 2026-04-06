@@ -1,3 +1,5 @@
+import { jwtDecode } from "jwt-decode";
+
 export const formatBytes = (b) =>
   b < 1024
     ? `${b} B`
@@ -12,4 +14,16 @@ export const convertToHtml = (text) => {
     .split("\n")
     .map((line) => `<p>${line}</p>`)
     .join("");
+};
+
+export const isTokenExpired = (token) => {
+  try {
+    const decoded = jwtDecode(token);
+    const currentTime = Date.now() / 1000;
+    console.log("Decoded JWT:", decoded, "Current Time:", currentTime);
+
+    return decoded.exp < currentTime;
+  } catch {
+    return true;
+  }
 };
