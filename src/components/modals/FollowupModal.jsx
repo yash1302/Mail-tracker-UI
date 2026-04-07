@@ -91,12 +91,11 @@ const FollowupModal = ({ lead, onClose }) => {
   const [draftId, setDraftId] = useState(null);
 
   const { accounts } = useContext(userContext);
+  const now = useMemo(() => Date.now(), []);
 
   if (!lead) return null;
 
   const name = lead.to[0].split("@")[0];
-
-  const now = useMemo(() => Date.now(), []);
 
   const daysSince = Math.floor(
     (now - new Date(lead.sentAt).getTime()) / DAY_MS,
