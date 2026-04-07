@@ -13,8 +13,9 @@ import {
   FiCheck,
   FiX,
 } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
-const LandingPage = ({ onLogin, onSignup }) => {
+const LandingPage = () => {
   const features = [
     {
       icon: <FiSend size={20} />,
@@ -53,6 +54,16 @@ const LandingPage = ({ onLogin, onSignup }) => {
     { value: "7 day", label: "Automatic followup detection" },
     { value: "100%", label: "Replies tracked in inbox" },
   ];
+
+  const navigate = useNavigate();
+
+  const onSignup = () => {
+    navigate("/signup");
+  };  
+
+  const onLogin = () => {
+    navigate("/login");
+  }
 
   return (
     <div

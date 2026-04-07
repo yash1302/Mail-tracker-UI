@@ -1,8 +1,19 @@
-import React, { useState } from "react";
-import { FiEye, FiEyeOff, FiCheck, FiRefreshCw, FiUser, FiMail, FiLock } from "react-icons/fi";
+import React, { useContext, useState } from "react";
+import {
+  FiEye,
+  FiEyeOff,
+  FiCheck,
+  FiRefreshCw,
+  FiUser,
+  FiMail,
+  FiLock,
+} from "react-icons/fi";
 import AuthLayout from "../layouts/AuthLayout";
+import { useNavigate } from "react-router-dom";
+import { userContext } from "../context/ContextProvider";
+import { signupUser } from "../utils/api.utils";
+import { toast } from "react-toastify";
 
-/* ─── inline styles / design tokens ─────────────────────────── */
 const token = {
   indigo: "#6366f1",
   indigoLight: "#818cf8",
@@ -179,7 +190,7 @@ const css = `
 `;
 
 /* ─── component ─────────────────────────────────────────────── */
-const SignupPage = ({ onSignup, onGoLogin, onBack }) => {
+const SignupPage = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -187,6 +198,37 @@ const SignupPage = ({ onSignup, onGoLogin, onBack }) => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [agreed, setAgreed] = useState(false);
+
+  const { setActive } = useContext(userContext);
+
+  const navigate = useNavigate();
+
+  const onSignup = async () => {
+    try {
+      const result = await signupUser({
+        name: name.trim(),
+        email: email.trim(),
+        password: password.trim(),
+      });
+      localStorage.setItem("token", result.data);
+      setName("");
+      setEmail("");
+      setPassword("");
+      setAgreed(false);
+      navigate("/");
+      setActive("dashboard");
+    } catch (error) {
+      toast.error(error || "Signup failed. Please try again.");
+    }
+  };
+
+  const onGoLogin = () => {
+    navigate("/login");
+  };
+
+  const onBack = () => {
+    navigate(-1);
+  };
 
   const validate = () => {
     const e = {};
@@ -201,15 +243,18 @@ const SignupPage = ({ onSignup, onGoLogin, onBack }) => {
     const e = validate();
     setErrors(e);
     if (Object.keys(e).length) return;
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      onSignup({ name: name.trim(), email: email.trim() });
-    }, 1300);
+    // setLoading(true);
+    onSignup();
   };
 
   const strength =
-    password.length === 0 ? 0 : password.length < 5 ? 1 : password.length < 8 ? 2 : 3;
+    password.length === 0
+      ? 0
+      : password.length < 5
+        ? 1
+        : password.length < 8
+          ? 2
+          : 3;
   const strengthLabel = ["", "Weak", "Fair", "Strong"];
   const strengthColor = ["", token.red, token.amber, token.green];
 
@@ -236,18 +281,26 @@ const SignupPage = ({ onSignup, onGoLogin, onBack }) => {
           >
             Create your account
           </h1>
-          <p style={{ fontSize: 13.5, color: token.slate400, margin: 0, fontWeight: 400 }}>
+          <p
+            style={{
+              fontSize: 13.5,
+              color: token.slate400,
+              margin: 0,
+              fontWeight: 400,
+            }}
+          >
             No credit card required. Up and running in seconds.
           </p>
         </div>
 
         {/* Fields */}
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-
           {/* Name */}
           <div>
             <div className="sp-field">
-              <span className="sp-icon"><FiUser size={15} /></span>
+              <span className="sp-icon">
+                <FiUser size={15} />
+              </span>
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -261,7 +314,9 @@ const SignupPage = ({ onSignup, onGoLogin, onBack }) => {
           {/* Email */}
           <div>
             <div className="sp-field">
-              <span className="sp-icon"><FiMail size={15} /></span>
+              <span className="sp-icon">
+                <FiMail size={15} />
+              </span>
               <input
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -276,7 +331,9 @@ const SignupPage = ({ onSignup, onGoLogin, onBack }) => {
           {/* Password */}
           <div>
             <div className="sp-field">
-              <span className="sp-icon"><FiLock size={15} /></span>
+              <span className="sp-icon">
+                <FiLock size={15} />
+              </span>
               <input
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -299,7 +356,10 @@ const SignupPage = ({ onSignup, onGoLogin, onBack }) => {
                       key={i}
                       className="sp-strength-bar"
                       style={{
-                        background: i <= strength ? strengthColor[strength] : token.slate200,
+                        background:
+                          i <= strength
+                            ? strengthColor[strength]
+                            : token.slate200,
                       }}
                     />
                   ))}
@@ -322,25 +382,53 @@ const SignupPage = ({ onSignup, onGoLogin, onBack }) => {
 
           {/* Terms */}
           <div style={{ marginTop: 2 }}>
-            <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer" }}>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 10,
+                cursor: "pointer",
+              }}
+            >
               <div
                 className="sp-checkbox"
                 onClick={() => setAgreed((v) => !v)}
                 style={{
                   border: `1.75px solid ${errors.agreed ? token.red : agreed ? token.indigo : token.slate200}`,
                   background: agreed ? token.indigo : token.white,
-                  boxShadow: agreed ? `0 0 0 3px rgba(99,102,241,0.12)` : "none",
+                  boxShadow: agreed
+                    ? `0 0 0 3px rgba(99,102,241,0.12)`
+                    : "none",
                 }}
               >
                 {agreed && <FiCheck size={10} color="#fff" strokeWidth={3.5} />}
               </div>
-              <span style={{ fontSize: 12.5, color: token.slate500, lineHeight: 1.55, fontWeight: 400 }}>
+              <span
+                style={{
+                  fontSize: 12.5,
+                  color: token.slate500,
+                  lineHeight: 1.55,
+                  fontWeight: 400,
+                }}
+              >
                 I agree to the{" "}
-                <span style={{ color: token.indigo, fontWeight: 600, cursor: "pointer" }}>
+                <span
+                  style={{
+                    color: token.indigo,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
+                >
                   Terms of Service
                 </span>{" "}
                 and{" "}
-                <span style={{ color: token.indigo, fontWeight: 600, cursor: "pointer" }}>
+                <span
+                  style={{
+                    color: token.indigo,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
+                >
                   Privacy Policy
                 </span>
               </span>
@@ -356,7 +444,14 @@ const SignupPage = ({ onSignup, onGoLogin, onBack }) => {
             style={{ marginTop: 6 }}
           >
             {loading ? (
-              <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 9 }}>
+              <span
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 9,
+                }}
+              >
                 <FiRefreshCw size={14} className="sp-spin" />
                 Creating account…
               </span>

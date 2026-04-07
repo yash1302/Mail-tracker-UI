@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   FiEye,
   FiEyeOff,
@@ -9,6 +9,10 @@ import {
   FiZap,
 } from "react-icons/fi";
 import AuthLayout from "../layouts/AuthLayout";
+import { useNavigate } from "react-router-dom";
+import { loginUser } from "../utils/api.utils";
+import { toast } from "react-toastify";
+import { userContext } from "../context/ContextProvider";
 
 /* ─── design tokens (mirrors SignupPage) ─────────────────────── */
 const token = {
@@ -184,15 +188,39 @@ const css = `
 `;
 
 /* ─── component ──────────────────────────────────────────────── */
-const Login = ({ onLogin, onGoSignup, onBack }) => {
+const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { setActive, fetchAccounts } = useContext(userContext);
+  const navigate = useNavigate();
 
-  const submit = () => {
-    setError("");
+  const onLogin = async () => {
+    try {
+      console.log("Logging in with:", { email, password });
+      const result = await loginUser({ email, password });
+      localStorage.setItem("token", result.data);
+      fetchAccounts();
+      navigate("/");
+      setActive("dashboard");
+    } catch (error) {
+      console.log(error, "error in login api");
+      toast.error(error || "Login failed. Please try again.");
+    }
+  };
+
+  const onGoSignup = () => {
+    navigate("/signup");
+  };
+  const onBack = () => {
+    navigate(-1);
+  };
+
+  const submit = (event) => {
+    event.preventDefault();
+    // setError("");
     if (!email.trim()) {
       setError("Please enter your email.");
       return;
@@ -201,17 +229,9 @@ const Login = ({ onLogin, onGoSignup, onBack }) => {
       setError("Please enter your password.");
       return;
     }
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      onLogin({
-        name: email
-          .split("@")[0]
-          .replace(/[._]/g, " ")
-          .replace(/\b\w/g, (c) => c.toUpperCase()),
-        email,
-      });
-    }, 1200);
+    // setLoading(true);
+
+    onLogin();
   };
 
   const hasEmailErr = !!error && !email.trim();
@@ -248,27 +268,6 @@ const Login = ({ onLogin, onGoSignup, onBack }) => {
           </p>
         </div>
 
-        {/* Demo hint */}
-        <div className="lp-demo-badge">
-          <FiZap
-            size={14}
-            color={token.indigo}
-            style={{ flexShrink: 0, marginTop: 1 }}
-          />
-          <p
-            style={{
-              fontSize: 12,
-              color: "#4338ca",
-              margin: 0,
-              lineHeight: 1.55,
-              fontWeight: 500,
-            }}
-          >
-            <strong>Demo mode</strong> — enter any email &amp; password to sign
-            in.
-          </p>
-        </div>
-
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {/* Email */}
           <div className="lp-field">
@@ -278,7 +277,7 @@ const Login = ({ onLogin, onGoSignup, onBack }) => {
             <input
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && submit()}
+              onKeyDown={(e) => e.key === "Enter" && submit(e)}
               type="email"
               placeholder="you@company.com"
               className={`lp-input${hasEmailErr ? " error" : ""}`}
@@ -293,7 +292,7 @@ const Login = ({ onLogin, onGoSignup, onBack }) => {
             <input
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && submit()}
+              onKeyDown={(e) => e.key === "Enter" && submit(e)}
               type={showPw ? "text" : "password"}
               placeholder="Password"
               className={`lp-input${hasPasswordErr ? " error" : ""}`}
@@ -339,7 +338,7 @@ const Login = ({ onLogin, onGoSignup, onBack }) => {
           {/* Submit */}
           <button
             className="lp-submit"
-            onClick={submit}
+            onClick={(e) => submit(e)}
             disabled={loading}
             style={{ marginTop: 2 }}
           >

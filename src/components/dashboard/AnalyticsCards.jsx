@@ -1,136 +1,103 @@
-import Sparkbar from "./Sparkbar";
-import { cardData } from "../../data/dashboardData.jsx";
-import { FiTrendingDown, FiTrendingUp } from "react-icons/fi";
+import { FiSend, FiRefreshCw, FiMessageSquare, FiTrendingUp, FiEye } from "react-icons/fi";
+import AnalyticsCard from "./AnalyticsCard";
 
-const AnalyticsCards = () => (
-  <div
-    style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16 }}
-  >
-    {cardData.map((card, idx) => (
-      <div
-        key={idx}
-        className={`fade-up card-${idx} stat-glow`}
-        style={{
-          background: "#fff",
-          borderRadius: 16,
-          padding: "20px 22px",
-          border: "1px solid #f1f5f9",
-          position: "relative",
-          overflow: "hidden",
-        }}
-      >
-        {/* Corner accent */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            right: 0,
-            width: 80,
-            height: 80,
-            background: `radial-gradient(circle at top right, ${card.color}10, transparent 70%)`,
-            borderRadius: "0 16px 0 0",
-          }}
-        />
+const AnalyticsCards = ({ kpi, onRefresh, isRefreshing = false }) => {
+  const {
+    totalSent = 0,
+    totalReplied = 0,
+    replyRate = 0,
+    totalClicked = 0,
+    clickRate = 0,
+    interestedLeads = 0,
+    noResponse = 0,
+    uniqueFollowedUp = 0,
+    followupNeeded = 0,
+    totalDrafts = 0,
+  } = kpi;
 
-        {/* Title row */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 16,
-          }}
+  const cardData = [
+    {
+      title: "Outreach",
+      Icon: FiSend,
+      color: "#6366f1",
+      bg: "#eef2ff",
+      stats: [
+        { label: "Emails Sent", value: totalSent },
+        { label: "Draft Templates", value: totalDrafts },
+      ],
+    },
+    {
+      title: "Follow-ups",
+      Icon: FiRefreshCw,
+      color: "#f59e0b",
+      bg: "#fef3c7",
+      stats: [
+        { label: "Followed Up", value: uniqueFollowedUp },
+        { label: "Follow-up Needed", value: followupNeeded },
+      ],
+    },
+    {
+      title: "Replies",
+      Icon: FiMessageSquare,
+      color: "#0ea5e9",
+      bg: "#e0f2fe",
+      stats: [
+        { label: "Replies Received", value: totalReplied },
+        { label: "Reply Rate", value: `${replyRate}%` },
+      ],
+    },
+    {
+      title: "Interest",
+      Icon: FiEye,
+      color: "#8b5cf6",
+      bg: "#ede9fe",
+      stats: [
+        { label: "Clicked Links", value: totalClicked },
+        { label: "Click Rate", value: `${clickRate}%` },
+      ],
+    },
+    {
+      title: "Warm Leads",
+      Icon: FiTrendingUp,
+      color: "#10b981",
+      bg: "#d1fae5",
+      stats: [
+        { label: "Interested, No Reply", value: interestedLeads },
+        { label: "No Response", value: noResponse < 0 ? 0 : noResponse },
+      ],
+    },
+  ];
+
+  return (
+    <div className="flex flex-col gap-2 shrink-0">
+      {/* Refresh button row */}
+      <div className="flex justify-end">
+        <button
+          onClick={onRefresh}
+          disabled={isRefreshing}
+          className="flex items-center gap-[6px] px-3 py-1.5 rounded-md border border-indigo-200 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition"
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 10,
-                background: card.bg,
-                color: card.color,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {card.icon}
-            </div>
-            <span style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>
-              {card.title}
-            </span>
-          </div>
-          <Sparkbar color={card.color} />
-        </div>
-
-        {/* Stat tiles */}
-        <div
-          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}
-        >
-          {card.stats.map((stat, i) => {
-            const isNeg = stat.change.startsWith("-");
-            return (
-              <div
-                key={i}
-                style={{
-                  background: "#fafafa",
-                  borderRadius: 10,
-                  padding: "10px 12px",
-                  border: "1px solid #f1f5f9",
-                }}
-              >
-                <p
-                  style={{
-                    fontSize: 11,
-                    color: "#9ca3af",
-                    marginBottom: 4,
-                    fontWeight: 500,
-                  }}
-                >
-                  {stat.label}
-                </p>
-                <div
-                  style={{ display: "flex", alignItems: "baseline", gap: 6 }}
-                >
-                  <span
-                    className="mono"
-                    style={{
-                      fontSize: 22,
-                      fontWeight: 600,
-                      color: "#111827",
-                      lineHeight: 1,
-                    }}
-                  >
-                    {stat.value}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: isNeg ? "#ef4444" : "#10b981",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 2,
-                    }}
-                  >
-                    {isNeg ? (
-                      <FiTrendingDown size={11} />
-                    ) : (
-                      <FiTrendingUp size={11} />
-                    )}
-                    {stat.change}
-                  </span>
-                </div>
-                <p style={{ fontSize: 10, color: "#d1d5db", marginTop: 3 }}>
-                  vs last week
-                </p>
-              </div>
-            );
-          })}
-        </div>
+          <FiRefreshCw size={12} className={isRefreshing ? "animate-spin" : ""} />
+          {isRefreshing ? "Checking replies…" : "Check Replies"}
+        </button>
       </div>
-    ))}
-  </div>
-);
+
+      {/* Cards */}
+      <div className="grid grid-cols-5 gap-3">
+        {cardData.map((card, index) => (
+          <AnalyticsCard
+            key={index}
+            index={index}
+            title={card.title}
+            Icon={card.Icon}
+            color={card.color}
+            bg={card.bg}
+            stats={card.stats}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
 
 export default AnalyticsCards;

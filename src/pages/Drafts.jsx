@@ -1,230 +1,42 @@
-import { useState, useRef } from "react";
-import { FiPaperclip, FiPlus, FiX, FiEdit } from "react-icons/fi";
+import { useContext, useEffect, useState } from "react";
+import { FiPaperclip, FiPlus, FiTrash2, FiRefreshCw } from "react-icons/fi";
+import DraftModal from "../components/drafts/DraftModal";
+import {
+  createDraftApi,
+  getDraftsApi,
+  updateDraftApi,
+  deleteDraftApi,
+} from "../utils/api.utils";
+import { userContext } from "../context/ContextProvider";
+import { convertToHtml } from "../utils/fileUtils";
+import { toast } from "react-toastify";
 
-// ── Inline mock components (swap for your real imports) ──────────────────────
-const formatBytes = (b) =>
-  b < 1024
-    ? `${b} B`
-    : b < 1048576
-      ? `${(b / 1024).toFixed(1)} KB`
-      : `${(b / 1048576).toFixed(1)} MB`;
-const isImg = (f) => f.type?.startsWith("image/");
-
-const AttachmentZone = ({ attachments, onChange }) => {
-  const ref = useRef(null);
-  const [drag, setDrag] = useState(false);
-  const add = (files) => {
-    const nf = Array.from(files).filter(
-      (f) => !attachments.find((a) => a.name === f.name && a.size === f.size),
-    );
-    onChange([...attachments, ...nf]);
-  };
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      <div
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDrag(true);
-        }}
-        onDragLeave={() => setDrag(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setDrag(false);
-          add(e.dataTransfer.files);
-        }}
-        onClick={() => ref.current?.click()}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 6,
-          border: `2px dashed ${drag ? "#6366f1" : "#e2e8f0"}`,
-          borderRadius: 10,
-          padding: "18px 12px",
-          cursor: "pointer",
-          background: drag ? "#eef2ff" : "#fafafa",
-          transition: "all 0.15s",
-          textAlign: "center",
-        }}
-      >
-        <FiPaperclip size={18} color={drag ? "#6366f1" : "#94a3b8"} />
-        <p style={{ fontSize: 12.5, color: "#64748b", margin: 0 }}>
-          Drop files or{" "}
-          <span style={{ color: "#6366f1", fontWeight: 600 }}>browse</span>
-        </p>
-        <p style={{ fontSize: 11, color: "#cbd5e1", margin: 0 }}>
-          Any file type · up to 10MB
-        </p>
-        <input
-          ref={ref}
-          type="file"
-          multiple
-          style={{ display: "none" }}
-          onChange={(e) => add(e.target.files)}
-        />
-      </div>
-      {attachments.length > 0 && (
-        <ul
-          style={{
-            listStyle: "none",
-            display: "flex",
-            flexDirection: "column",
-            gap: 6,
-          }}
-        >
-          {attachments.map((f, i) => (
-            <li
-              key={i}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 9,
-                background: "#f8fafc",
-                border: "1px solid #e2e8f0",
-                borderRadius: 8,
-                padding: "7px 10px",
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.querySelector(".rm-btn").style.opacity = "1")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.querySelector(".rm-btn").style.opacity = "0")
-              }
-            >
-              {isImg(f) ? (
-                <img
-                  src={URL.createObjectURL(f)}
-                  alt={f.name}
-                  style={{
-                    width: 30,
-                    height: 30,
-                    objectFit: "cover",
-                    borderRadius: 6,
-                    border: "1px solid #e2e8f0",
-                    flexShrink: 0,
-                  }}
-                />
-              ) : (
-                <div
-                  style={{
-                    width: 30,
-                    height: 30,
-                    borderRadius: 6,
-                    background: "#eef2ff",
-                    color: "#6366f1",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  <FiFile size={14} />
-                </div>
-              )}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p
-                  style={{
-                    fontSize: 12.5,
-                    fontWeight: 600,
-                    color: "#0f172a",
-                    margin: 0,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {f.name}
-                </p>
-                <p style={{ fontSize: 10.5, color: "#94a3b8", margin: 0 }}>
-                  {formatBytes(f.size)}
-                </p>
-              </div>
-              <button
-                className="rm-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onChange(attachments.filter((_, j) => j !== i));
-                }}
-                style={{
-                  opacity: 0,
-                  transition: "opacity 0.15s",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  color: "#94a3b8",
-                  padding: 4,
-                  borderRadius: 6,
-                  display: "flex",
-                  lineHeight: 0,
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "#ef4444")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "#94a3b8")}
-              >
-                <FiX size={13} />
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-};
-
-const AttachmentList = ({ attachments }) =>
-  !attachments?.length ? (
-    <p style={{ fontSize: 13, color: "#cbd5e1", fontStyle: "italic" }}>
-      No attachments
-    </p>
-  ) : (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-      {attachments.map((f, i) => (
-        <span
-          key={i}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            background: "#f8fafc",
-            border: "1px solid #e2e8f0",
-            borderRadius: 8,
-            padding: "5px 10px",
-            fontSize: 11.5,
-            color: "#374151",
-          }}
-        >
-          {isImg(f) ? <FiImage size={13} /> : <FiFile size={13} />}
-          <span
-            style={{
-              maxWidth: 130,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {f.name}
-          </span>
-          <span style={{ color: "#cbd5e1" }}>· {formatBytes(f.size)}</span>
-        </span>
-      ))}
-    </div>
-  );
+const SkeletonRow = () => (
+  <tr className="border-b border-slate-50 animate-pulse">
+    <td className="px-[18px] py-[14px]">
+      <div className="h-[22px] w-[70px] bg-slate-200 rounded-full" />
+    </td>
+    <td className="px-[18px] py-[14px]">
+      <div className="h-[13px] w-[140px] bg-slate-200 rounded" />
+    </td>
+    <td className="px-[18px] py-[14px]">
+      <div className="h-[13px] w-[220px] bg-slate-100 rounded" />
+    </td>
+    <td className="px-[18px] py-[14px]">
+      <div className="h-[22px] w-[60px] bg-slate-100 rounded-full" />
+    </td>
+    <td className="px-[18px] py-[14px]">
+      <div className="h-[28px] w-[28px] bg-slate-100 rounded-md" />
+    </td>
+  </tr>
+);
 
 const Drafts = () => {
-  const [drafts, setDrafts] = useState([
-    {
-      title: "Full Stack Developer Outreach",
-      subject: "Partnership Opportunity",
-      body: "Hi, I would like to connect with your team about a potential partnership.",
-      attachments: [],
-    },
-    {
-      title: "React Developer Opportunity",
-      subject: "Quick question about your product",
-      body: "We've been evaluating solutions in this space and yours stood out.",
-      attachments: [],
-    },
-  ]);
+  const [drafts, setDrafts] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false); // ← added
+  const [deletingId, setDeletingId] = useState(null);
+
   const [modal, setModal] = useState(false);
   const [modalMode, setModalMode] = useState("create");
   const [editIdx, setEditIdx] = useState(null);
@@ -232,6 +44,8 @@ const Drafts = () => {
   const [body, setBody] = useState("");
   const [attachments, setAttachments] = useState([]);
   const [title, setTitle] = useState("");
+
+  const { accounts } = useContext(userContext);
 
   const reset = () => {
     setTitle("");
@@ -241,521 +55,211 @@ const Drafts = () => {
     setEditIdx(null);
     setModalMode("create");
   };
+
   const close = () => {
     setModal(false);
     reset();
   };
-  const openRow = (row, i) => {
+
+  const openRow = (row) => {
     setTitle(row.title || "");
     setSubject(row.subject);
     setBody(row.body);
     setAttachments(row.attachments || []);
-    setEditIdx(i);
+    setEditIdx(row.id);
     setModalMode("view");
     setModal(true);
   };
-  const save = () => {
+
+  const save = async () => {
     if (!subject.trim() && !body.trim()) return;
+    setIsSaving(true); // ← start
+    try {
+      const formData = new FormData();
+      const htmlBody = convertToHtml(body);
+      formData.append("title", title);
+      formData.append("subject", subject);
+      formData.append("body", htmlBody);
+      formData.append("gmailAccountId", accounts[0].gmailAccountId);
+      formData.append("userId", accounts[0].id);
 
-    const d = {
-      title,
-      subject,
-      body,
-      attachments,
-    };
+      const existing = attachments.filter((a) => !(a instanceof File));
+      const newFiles = attachments.filter((a) => a instanceof File);
 
-    if (modalMode === "edit" && editIdx !== null)
-      setDrafts(drafts.map((x, i) => (i === editIdx ? d : x)));
-    else setDrafts([...drafts, d]);
+      if (modalMode === "edit") {
+        formData.append(
+          "existingAttachments",
+          JSON.stringify(existing.map((a) => ({ _id: a._id }))),
+        );
+      }
+      newFiles.forEach((file) => formData.append("files", file));
 
-    close();
+      if (modalMode === "edit") {
+        await updateDraftApi(editIdx, formData);
+      } else {
+        await createDraftApi(formData);
+      }
+
+      await fetchDrafts();
+      close();
+    } catch (err) {
+      console.error("Draft save error:", err);
+      toast.error("Failed to save draft.");
+    } finally {
+      setIsSaving(false); // ← always stop
+    }
   };
 
-  const isView = modalMode === "view";
-  const isEdit = modalMode === "edit";
+  const handleDelete = async (e, id) => {
+    e.stopPropagation();
+    setDeletingId(id);
+    try {
+      await deleteDraftApi(id);
+      setDrafts((d) => d.filter((x) => x.id !== id));
+      toast.success("Draft deleted.");
+    } catch (err) {
+      console.error("Delete draft error:", err);
+      toast.error("Failed to delete draft.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const fetchDrafts = async () => {
+    setIsLoading(true);
+    try {
+      const res = await getDraftsApi({
+        userId: accounts[0].id,
+        gmailAccountId: accounts[0].gmailAccountId,
+      });
+      const formatted = res.data.map((d) => ({
+        id: d.id,
+        title: d.title,
+        subject: d.subject,
+        body: d.htmlBody,
+        attachments: d.attachments || [],
+      }));
+      setDrafts(formatted);
+    } catch (err) {
+      console.error("Fetch drafts error:", err);
+      toast.error("Failed to fetch drafts.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (accounts?.length) fetchDrafts();
+  }, [accounts]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+    <div className="flex flex-col gap-4 h-full">
       {/* Header */}
-      <div
-        className="fade-up d0"
-        style={{ display: "flex", justifyContent: "flex-end" }}
-      >
+      <div className="flex justify-end">
         <button
-          className="btn-primary"
-          onClick={() => {
-            reset();
-            setModal(true);
-          }}
+          onClick={() => { reset(); setModal(true); }}
+          className="flex items-center gap-[7px] px-[16px] py-[8px] rounded-[10px] text-[13px] font-semibold bg-indigo-500 text-white hover:bg-indigo-600 transition hover:-translate-y-[1px] hover:shadow-[0_4px_12px_rgba(99,102,241,0.35)]"
         >
-          <FiPlus size={14} /> Create Draft
+          <FiPlus size={14} />
+          Create Draft
         </button>
       </div>
 
-      {/* Table */}
-      <div
-        className="fade-up d1"
-        style={{
-          background: "#fff",
-          borderRadius: 14,
-          border: "1px solid #f1f5f9",
-          overflow: "hidden",
-          boxShadow: "0 1px 6px rgba(0,0,0,0.04)",
-        }}
-      >
-        <table
-          style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}
-        >
-          <thead>
-            <tr
-              style={{
-                background: "#fafafa",
-                borderBottom: "1px solid #f1f5f9",
-              }}
-            >
-              {["Title", "Subject", "Body Preview", "Attachments"].map((h) => (
-                <th
-                  key={h}
-                  style={{
-                    textAlign: "left",
-                    padding: "10px 18px",
-                    fontSize: 10.5,
-                    fontWeight: 700,
-                    color: "#94a3b8",
-                    letterSpacing: "0.05em",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {drafts.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={3}
-                  style={{
-                    padding: "40px",
-                    textAlign: "center",
-                    color: "#d1d5db",
-                    fontSize: 13,
-                  }}
-                >
-                  No drafts yet. Create your first one.
-                </td>
+      <div className="bg-white rounded-[14px] border border-slate-100 overflow-hidden shadow-sm flex flex-col flex-1 min-h-0">
+        <div className="overflow-y-auto flex-1">
+          <table className="w-full text-[13px] border-collapse">
+            <thead className="sticky top-0 z-[1]">
+              <tr className="bg-[#fafafa] border-b border-slate-100">
+                {["Title", "Subject", "Body Preview", "Attachments", ""].map((h) => (
+                  <th
+                    key={h}
+                    className="text-left px-[18px] py-[10px] text-[10.5px] font-bold text-slate-400 uppercase tracking-[0.05em]"
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
-            ) : (
-              drafts.map((row, i) => (
-                <tr
-                  key={i}
-                  className="row-hover"
-                  onClick={() => openRow(row, i)}
-                  style={{
-                    borderBottom: "1px solid #f8fafc",
-                    cursor: "pointer",
-                    transition: "background 0.15s",
-                  }}
-                >
-                  <td style={{ padding: "14px 18px" }}>
-                    <span
-                      style={{
-                        background: "#eef2ff",
-                        color: "#6366f1",
-                        padding: "3px 10px",
-                        borderRadius: 20,
-                        fontSize: 11,
-                        fontWeight: 600,
-                      }}
-                    >
-                      {row.title || "General"}
-                    </span>
-                  </td>
-                  <td
-                    style={{
-                      padding: "14px 18px",
-                      fontWeight: 600,
-                      color: "#0f172a",
-                    }}
-                  >
-                    {row.subject}
-                  </td>
-                  <td
-                    style={{
-                      padding: "14px 18px",
-                      color: "#64748b",
-                      maxWidth: 280,
-                    }}
-                  >
-                    <span
-                      style={{
-                        display: "block",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        maxWidth: 260,
-                      }}
-                    >
-                      {row.body}
-                    </span>
-                  </td>
-                  <td style={{ padding: "14px 18px" }}>
-                    {row.attachments?.length > 0 ? (
-                      <span
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 5,
-                          background: "#eef2ff",
-                          color: "#6366f1",
-                          padding: "3px 9px",
-                          borderRadius: 20,
-                          fontSize: 11,
-                          fontWeight: 600,
-                        }}
-                      >
-                        <FiPaperclip size={11} /> {row.attachments.length} file
-                        {row.attachments.length > 1 ? "s" : ""}
-                      </span>
-                    ) : (
-                      <span style={{ color: "#e2e8f0", fontSize: 12 }}>—</span>
-                    )}
+            </thead>
+
+            <tbody>
+              {isLoading &&
+                Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)}
+
+              {!isLoading && drafts.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="py-[40px] text-center text-slate-300 text-[13px]">
+                    No drafts yet. Create your first one.
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              )}
+
+              {!isLoading &&
+                drafts.map((row) => (
+                  <tr
+                    key={row.id}
+                    onClick={() => openRow(row)}
+                    className="border-b border-slate-50 cursor-pointer hover:bg-[#f8f9ff] transition"
+                  >
+                    <td className="px-[18px] py-[14px]">
+                      <span className="bg-indigo-50 text-indigo-500 px-[10px] py-[3px] rounded-full text-[11px] font-semibold">
+                        {row.title || "General"}
+                      </span>
+                    </td>
+                    <td className="px-[18px] py-[14px] font-semibold text-slate-900">
+                      {row.subject}
+                    </td>
+                    <td className="px-[18px] py-[14px] text-slate-500 max-w-[280px]">
+                      <span
+                        className="block truncate max-w-[260px]"
+                        dangerouslySetInnerHTML={{ __html: row.body }}
+                      />
+                    </td>
+                    <td className="px-[18px] py-[14px]">
+                      {row.attachments?.length > 0 ? (
+                        <span className="inline-flex items-center gap-[5px] bg-indigo-50 text-indigo-500 px-[9px] py-[3px] rounded-full text-[11px] font-semibold">
+                          <FiPaperclip size={11} />
+                          {row.attachments.length} file{row.attachments.length > 1 ? "s" : ""}
+                        </span>
+                      ) : (
+                        <span className="text-slate-200 text-[12px]">—</span>
+                      )}
+                    </td>
+                    <td className="px-[18px] py-[14px]">
+                      <button
+                        onClick={(e) => handleDelete(e, row.id)}
+                        disabled={deletingId === row.id}
+                        className="flex items-center justify-center w-[28px] h-[28px] rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition disabled:opacity-50 disabled:pointer-events-none"
+                      >
+                        {deletingId === row.id ? (
+                          <FiRefreshCw size={13} className="animate-spin text-slate-400" />
+                        ) : (
+                          <FiTrash2 size={14} />
+                        )}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* Modal */}
       {modal && (
-        <div className="modal-backdrop" onClick={close}>
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: "#fff",
-              borderRadius: 18,
-              width: 540,
-              overflow: "hidden",
-              boxShadow: "0 25px 60px rgba(0,0,0,0.18)",
-            }}
-          >
-            {/* Modal header */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "18px 22px",
-                borderBottom: "1px solid #f1f5f9",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <h2
-                  style={{
-                    fontSize: 15,
-                    fontWeight: 700,
-                    color: "#0f172a",
-                    margin: 0,
-                  }}
-                >
-                  {isView
-                    ? "View Draft"
-                    : isEdit
-                      ? "Edit Draft"
-                      : "Create Draft"}
-                </h2>
-                {isView && (
-                  <span
-                    style={{
-                      fontSize: 11,
-                      background: "#f1f5f9",
-                      color: "#64748b",
-                      padding: "2px 8px",
-                      borderRadius: 20,
-                      fontWeight: 600,
-                    }}
-                  >
-                    Read only
-                  </span>
-                )}
-                {isEdit && (
-                  <span
-                    style={{
-                      fontSize: 11,
-                      background: "#eef2ff",
-                      color: "#6366f1",
-                      padding: "2px 8px",
-                      borderRadius: 20,
-                      fontWeight: 600,
-                    }}
-                  >
-                    Editing
-                  </span>
-                )}
-              </div>
-              <button
-                onClick={close}
-                style={{
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  color: "#94a3b8",
-                  display: "flex",
-                  padding: 4,
-                  borderRadius: 8,
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#f1f5f9";
-                  e.currentTarget.style.color = "#374151";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "none";
-                  e.currentTarget.style.color = "#94a3b8";
-                }}
-              >
-                <FiX size={16} />
-              </button>
-            </div>
-
-            {/* Modal body */}
-            <div
-              style={{
-                padding: "20px 22px",
-                display: "flex",
-                flexDirection: "column",
-                gap: 16,
-                maxHeight: "65vh",
-                overflowY: "auto",
-              }}
-            >
-              <div>
-                <label
-                  style={{
-                    fontSize: 10.5,
-                    fontWeight: 700,
-                    color: "#94a3b8",
-                    letterSpacing: "0.05em",
-                    textTransform: "uppercase",
-                    display: "block",
-                    marginBottom: 7,
-                  }}
-                >
-                  Draft Title
-                </label>
-
-                {isView ? (
-                  <p
-                    style={{ fontSize: 13, fontWeight: 600, color: "#0f172a" }}
-                  >
-                    {title || (
-                      <span style={{ color: "#cbd5e1", fontWeight: 400 }}>
-                        No title
-                      </span>
-                    )}
-                  </p>
-                ) : (
-                  <input
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="e.g. React Developer Outreach"
-                    style={{
-                      border: "1px solid #e2e8f0",
-                      borderRadius: 9,
-                      padding: "9px 12px",
-                      width: "100%",
-                      fontSize: 13,
-                      color: "#374151",
-                      outline: "none",
-                      fontFamily: "DM Sans,sans-serif",
-                    }}
-                  />
-                )}
-              </div>
-              <div>
-                <label
-                  style={{
-                    fontSize: 10.5,
-                    fontWeight: 700,
-                    color: "#94a3b8",
-                    letterSpacing: "0.05em",
-                    textTransform: "uppercase",
-                    display: "block",
-                    marginBottom: 7,
-                  }}
-                >
-                  Subject
-                </label>
-                {isView ? (
-                  <p
-                    style={{ fontSize: 14, fontWeight: 600, color: "#0f172a" }}
-                  >
-                    {subject || (
-                      <span style={{ color: "#cbd5e1", fontWeight: 400 }}>
-                        No subject
-                      </span>
-                    )}
-                  </p>
-                ) : (
-                  <input
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    placeholder="e.g. Quick question about your product"
-                    style={{
-                      border: "1px solid #e2e8f0",
-                      borderRadius: 9,
-                      padding: "9px 12px",
-                      width: "100%",
-                      fontSize: 13,
-                      color: "#374151",
-                      outline: "none",
-                      transition: "border 0.15s",
-                      fontFamily: "DM Sans,sans-serif",
-                    }}
-                    onFocus={(e) => (e.target.style.borderColor = "#6366f1")}
-                    onBlur={(e) => (e.target.style.borderColor = "#e2e8f0")}
-                  />
-                )}
-              </div>
-              <div style={{ borderTop: "1px solid #f1f5f9" }} />
-              <div>
-                <label
-                  style={{
-                    fontSize: 10.5,
-                    fontWeight: 700,
-                    color: "#94a3b8",
-                    letterSpacing: "0.05em",
-                    textTransform: "uppercase",
-                    display: "block",
-                    marginBottom: 7,
-                  }}
-                >
-                  Email Body
-                </label>
-                {isView ? (
-                  <p
-                    style={{
-                      fontSize: 13,
-                      color: "#374151",
-                      lineHeight: 1.65,
-                      whiteSpace: "pre-line",
-                    }}
-                  >
-                    {body || (
-                      <span style={{ color: "#cbd5e1" }}>No content.</span>
-                    )}
-                  </p>
-                ) : (
-                  <>
-                    <textarea
-                      value={body}
-                      onChange={(e) => setBody(e.target.value)}
-                      rows={5}
-                      placeholder="Write your outreach email…"
-                      style={{
-                        border: "1px solid #e2e8f0",
-                        borderRadius: 9,
-                        padding: "9px 12px",
-                        width: "100%",
-                        fontSize: 13,
-                        color: "#374151",
-                        outline: "none",
-                        resize: "none",
-                        lineHeight: 1.6,
-                        fontFamily: "DM Sans,sans-serif",
-                        transition: "border 0.15s",
-                      }}
-                      onFocus={(e) => (e.target.style.borderColor = "#6366f1")}
-                      onBlur={(e) => (e.target.style.borderColor = "#e2e8f0")}
-                    />
-                    <p
-                      style={{
-                        textAlign: "right",
-                        fontSize: 11,
-                        color: "#cbd5e1",
-                        marginTop: 4,
-                      }}
-                    >
-                      {body.length} characters
-                    </p>
-                  </>
-                )}
-              </div>
-              <div style={{ borderTop: "1px solid #f1f5f9" }} />
-              <div>
-                <label
-                  style={{
-                    fontSize: 10.5,
-                    fontWeight: 700,
-                    color: "#94a3b8",
-                    letterSpacing: "0.05em",
-                    textTransform: "uppercase",
-                    display: "block",
-                    marginBottom: 8,
-                  }}
-                >
-                  Attachments
-                </label>
-                {isView ? (
-                  <AttachmentList attachments={attachments} />
-                ) : (
-                  <AttachmentZone
-                    attachments={attachments}
-                    onChange={setAttachments}
-                  />
-                )}
-              </div>
-            </div>
-
-            {/* Modal footer */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "14px 22px",
-                borderTop: "1px solid #f1f5f9",
-                background: "#fafafa",
-              }}
-            >
-              <span style={{ fontSize: 11.5, color: "#94a3b8" }}>
-                {attachments.length > 0
-                  ? `${attachments.length} attachment${attachments.length > 1 ? "s" : ""}`
-                  : "No attachments"}
-              </span>
-              <div style={{ display: "flex", gap: 8 }}>
-                {isView ? (
-                  <>
-                    <button className="btn-secondary" onClick={close}>
-                      Close
-                    </button>
-                    <button
-                      className="btn-primary"
-                      onClick={() => setModalMode("edit")}
-                    >
-                      <FiEdit size={13} />
-                      Edit Draft
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      className="btn-secondary"
-                      onClick={isEdit ? () => setModalMode("view") : close}
-                    >
-                      Cancel
-                    </button>
-                    <button className="btn-primary" onClick={save}>
-                      {isEdit ? "Save Changes" : "Save Draft"}
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+        <DraftModal
+          modalMode={modalMode}
+          title={title}
+          subject={subject}
+          body={body}
+          attachments={attachments}
+          setTitle={setTitle}
+          setSubject={setSubject}
+          setBody={setBody}
+          setAttachments={setAttachments}
+          close={close}
+          save={save}
+          setModalMode={setModalMode}
+          isSaving={isSaving} // ← passed down
+        />
       )}
     </div>
   );
