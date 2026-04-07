@@ -36,7 +36,6 @@ const EmailFormCard = ({
   const [bccRecipientInput, setBCCRecipientInput] = useState("");
   const [attachments, setAttachments] = useState([]);
   const [sending, setSending] = useState(false);
-  const [sentSuccess, setSentSuccess] = useState(false);
   const [ccRecipients, setCCRecipients] = useState([]);
   const [bccRecipients, setBCCRecipients] = useState([]);
   const fileRef = useRef(null);
@@ -156,7 +155,6 @@ const EmailFormCard = ({
 
       await sendEmail(formData);
 
-      setSentSuccess(true);
       setRecipients([]);
       setRecipientInput("");
       setSubject("");

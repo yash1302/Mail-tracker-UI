@@ -1,4 +1,3 @@
-import { toast } from "react-toastify";
 import { apiConfig } from "./api.config";
 import axiosclient from "./axios-client";
 const {
@@ -9,11 +8,9 @@ const {
   GET_SENT_EMAILS,
   DOWNLOAD_ATTACHMENT,
   DRAFTS,
-  UPDATE_DRAFT,
   GET_FOLLOWUPS,
   CHECK_REPLIES,
   DELETE_DRAFT,
-  UPDATE_FOLLOWUP_STATUS,
 } = apiConfig;
 
 export const signupUser = async (userData) => {

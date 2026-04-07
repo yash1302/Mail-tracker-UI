@@ -1,4 +1,4 @@
-import { statusConfig, tagConfig } from "../../utils/statusConfig";
+import { statusConfig } from "../../utils/statusConfig";
 
 const SkeletonRow = () => (
   <tr className="border-b border-slate-50 animate-pulse">

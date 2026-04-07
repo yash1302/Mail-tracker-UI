@@ -1,18 +1,18 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import {
   FiTrash2,
   FiCheckCircle,
   FiMail,
   FiShield,
-  FiRefreshCw,
   FiAlertTriangle,
   FiX,
   FiAlertCircle,
 } from "react-icons/fi";
-import { deleteGmailAccount, getGmailAccounts } from "../utils/api.utils";
+import { deleteGmailAccount } from "../utils/api.utils";
 import { toast } from "react-toastify";
 import { userContext } from "../context/ContextProvider";
 import { isTokenExpired } from "../utils/fileUtils";
+import { useNavigate } from "react-router-dom";
 
 const GoogleIcon = ({ size = 16 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24">
@@ -166,6 +166,7 @@ const Settings = () => {
   const [pendingDisconnect, setPendingDisconnect] = useState(null);
 
   const { accounts, fetchAccounts } = useContext(userContext);
+  const navigate = useNavigate();
 
   const handleConnectGmail = () => {
     const token = localStorage.getItem("token");
@@ -173,7 +174,6 @@ const Settings = () => {
     if (!token || isTokenExpired(token)) {
       toast.error("Session expired. Please login again.");
       navigate("/");
-
       return;
     }
 
@@ -181,7 +181,6 @@ const Settings = () => {
   };
 
   const disconnect = async () => {
-
     if (!pendingDisconnect) return;
     await deleteGmailAccount(accounts[0]?.gmailAccountId);
     await fetchAccounts();

@@ -32,7 +32,7 @@ const token = {
 };
 
 const css = `
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&display=swap');
+ 
 
   * { box-sizing: border-box; }
 
@@ -195,7 +195,7 @@ const SignupPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
-  const [loading, setLoading] = useState(false);
+
   const [errors, setErrors] = useState({});
   const [agreed, setAgreed] = useState(false);
 
@@ -243,7 +243,6 @@ const SignupPage = () => {
     const e = validate();
     setErrors(e);
     if (Object.keys(e).length) return;
-    // setLoading(true);
     onSignup();
   };
 
@@ -440,24 +439,9 @@ const SignupPage = () => {
           <button
             className="sp-submit"
             onClick={submit}
-            disabled={loading}
             style={{ marginTop: 6 }}
           >
-            {loading ? (
-              <span
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 9,
-                }}
-              >
-                <FiRefreshCw size={14} className="sp-spin" />
-                Creating account…
-              </span>
-            ) : (
-              "Create account →"
-            )}
+            "Create account →"
           </button>
         </div>
 
