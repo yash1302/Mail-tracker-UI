@@ -16,7 +16,7 @@ import {
 } from "react-icons/fi";
 import DraftPicker from "../email/compose email/DraftPicker";
 import { convertToHtml } from "../../utils/fileUtils";
-import { userContext } from "../../context/ContextProvider";
+import { userContext } from "../../context/userContext";
 import { sendEmail } from "../../utils/api.utils";
 import { toast } from "react-toastify";
 

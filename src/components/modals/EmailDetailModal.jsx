@@ -16,7 +16,7 @@ import {
 import { BsPaperclip } from "react-icons/bs";
 import { downloadAttachment, sendEmail } from "../../utils/api.utils";
 import { useContext, useRef, useState } from "react";
-import { userContext } from "../../context/ContextProvider";
+import { userContext } from "../../context/userContext";
 import { convertToHtml } from "../../utils/fileUtils";
 import { toast } from "react-toastify";
 import DraftPicker from "../email/compose email/DraftPicker";
@@ -159,7 +159,8 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
       if (handleGetSentEmails) await handleGetSentEmails();
       setSentSuccess(true);
       setTimeout(() => setViewMail(null), 1500);
-    } catch (err) {
+    } catch (_error) {
+      console.error(_error);
       toast.error("Failed to send follow-up.");
     } finally {
       setSending(false);

@@ -1,7 +1,7 @@
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getFollowUpsApi } from "../../utils/api.utils";
-import { userContext } from "../../context/ContextProvider";
+import { userContext } from "../../context/userContext";
 
 const SkeletonRow = () => (
   <div className="flex flex-col gap-[6px] py-[10px] border-b border-slate-50 animate-pulse">
@@ -22,7 +22,7 @@ const FollowupQueue = ({ openFollowupModal }) => {
   const [leads, setLeads] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const fetchFollowUps = async () => {
+  const fetchFollowUps = useCallback(async () => {
     if (!accounts?.length) return;
     setIsLoading(true);
     try {
@@ -39,14 +39,14 @@ const FollowupQueue = ({ openFollowupModal }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [accounts]);
 
   useEffect(() => {
     const init = async () => {
       await fetchFollowUps();
     };
     init();
-  }, [accounts]);
+  }, [fetchFollowUps]);
 
   return (
     <div className="bg-white rounded-[14px] border border-slate-100 shadow-sm flex flex-col overflow-hidden">

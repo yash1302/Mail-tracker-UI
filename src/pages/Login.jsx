@@ -12,7 +12,7 @@ import AuthLayout from "../layouts/AuthLayout";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../utils/api.utils";
 import { toast } from "react-toastify";
-import { userContext } from "../context/ContextProvider";
+import { userContext } from "../context/userContext";
 
 /* ─── design tokens (mirrors SignupPage) ─────────────────────── */
 const token = {
@@ -198,8 +198,8 @@ const Login = () => {
   const navigate = useNavigate();
 
   const onLogin = async () => {
+    setLoading(true);
     try {
-
       const result = await loginUser({ email, password });
       localStorage.setItem("token", result.data);
       fetchAccounts();
@@ -208,6 +208,8 @@ const Login = () => {
     } catch (error) {
       console.log(error, "error in login api");
       toast.error(error || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 

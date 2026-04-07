@@ -12,13 +12,7 @@ import {
 import { updateFollowUpStatusApi } from "../../utils/api.utils";
 import { toast } from "react-toastify";
 
-const FollowUpRow = ({
-  row,
-  index,
-  length,
-  openCompose,
-  setQueue,
-}) => {
+const FollowUpRow = ({ row, index, length, openCompose, setQueue }) => {
   const [loadingAction, setLoadingAction] = useState(null); // "snooze" | "dismiss" | "complete" | "resume"
 
   const hue = (row.to[0].charCodeAt(0) * 17) % 360;
@@ -27,15 +21,15 @@ const FollowUpRow = ({
     row.daysSince >= 14
       ? "bg-red-500"
       : row.daysSince >= 10
-      ? "bg-amber-500"
-      : "bg-indigo-500";
+        ? "bg-amber-500"
+        : "bg-indigo-500";
 
   const urgencyText =
     row.daysSince >= 14
       ? "text-red-500"
       : row.daysSince >= 10
-      ? "text-amber-500"
-      : "text-indigo-500";
+        ? "text-amber-500"
+        : "text-indigo-500";
 
   const fStatus = row.followUpStatus || row.status;
   const isActing = loadingAction !== null;
@@ -67,12 +61,17 @@ const FollowUpRow = ({
       setQueue((q) =>
         q.map((x) =>
           x.id === row.id
-            ? { ...x, followUpStatus: statusMap[action], status: statusMap[action] }
+            ? {
+                ...x,
+                followUpStatus: statusMap[action],
+                status: statusMap[action],
+              }
             : x,
         ),
       );
       toast.success(toastMap[action]);
-    } catch (err) {
+    } catch (_error) {
+      console.error(_error);
       toast.error(`Failed to ${action} follow-up. Please try again.`);
     } finally {
       setLoadingAction(null);
@@ -144,7 +143,9 @@ const FollowUpRow = ({
         </p>
 
         <div className="flex items-center gap-3 text-[11.5px] mt-1">
-          <span className={`flex items-center gap-1 font-semibold ${urgencyText}`}>
+          <span
+            className={`flex items-center gap-1 font-semibold ${urgencyText}`}
+          >
             <FiClock size={11} /> {row.daysSince} days since last sent
           </span>
           <span className="flex items-center gap-1 text-slate-400">
@@ -166,7 +167,6 @@ const FollowUpRow = ({
 
       {/* Actions */}
       <div className="flex gap-2 shrink-0">
-
         {/* ── PENDING ── */}
         {fStatus === "Pending" && (
           <>

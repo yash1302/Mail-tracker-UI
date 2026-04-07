@@ -1,7 +1,7 @@
 import { FiEdit3 } from "react-icons/fi";
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { getDraftsApi } from "../../../utils/api.utils";
-import { userContext } from "../../../context/ContextProvider";
+import { userContext } from "../../../context/userContext";
 
 const DraftPicker = ({
   setSubject,
@@ -14,7 +14,7 @@ const DraftPicker = ({
 
   const { accounts } = useContext(userContext);
 
-  const fetchDrafts = async () => {
+  const fetchDrafts = useCallback(async () => {
     try {
       const res = await getDraftsApi({
         userId: accounts[0].id,
@@ -33,7 +33,7 @@ const DraftPicker = ({
     } catch (err) {
       console.error("Fetch drafts error:", err);
     }
-  };
+  }, [accounts]);
 
   useEffect(() => {
     const init = async () => {
@@ -42,7 +42,7 @@ const DraftPicker = ({
       }
     };
     init();
-  }, [accounts]);
+  }, [accounts, fetchDrafts]);
 
   return (
     <div className="px-[22px] py-[14px] bg-[#f8faff] border-b border-slate-200">

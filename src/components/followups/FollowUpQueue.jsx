@@ -5,7 +5,7 @@ import { useContext, useState } from "react";
 import FollowupModal from "../modals/FollowupModal";
 import { toast } from "react-toastify";
 import { checkRepliesApi } from "../../utils/api.utils";
-import { userContext } from "../../context/ContextProvider";
+import { userContext } from "../../context/userContext";
 
 const SkeletonRow = () => (
   <div className="flex items-center gap-4 px-5 py-4 border-b border-slate-100 animate-pulse">
@@ -31,7 +31,7 @@ const FollowUpQueue = ({
   const [activeModal, setActiveModal] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { accounts } = useContext(userContext);
-  
+
   const openCompose = (row) => setActiveModal(row);
 
   const visible = queue.filter((x) => {
@@ -54,7 +54,8 @@ const FollowUpQueue = ({
       });
       toast.success("Checked for new replies! Updating the queue...");
       await handlegetFollowUpsApi();
-    } catch (error) {
+    } catch (_error) {
+      console.error(_error);
       toast.error("Failed to refresh replies. Please try again.");
     } finally {
       setIsRefreshing(false);

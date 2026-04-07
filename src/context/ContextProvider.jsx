@@ -1,7 +1,6 @@
-import React, { createContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getGmailAccounts } from "../utils/api.utils";
-
-export const userContext = createContext();
+import { userContext } from "./userContext";
 
 const ContextProvider = ({ children }) => {
   const [screen, setScreen] = useState("landing");

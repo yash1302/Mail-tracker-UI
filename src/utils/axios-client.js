@@ -2,7 +2,7 @@ import axios from "axios";
 import { API_URL } from "./api.config";
 import { toast } from "react-toastify";
 
-// Create Axios instance
+// Create Axios instance
 const axiosclient = axios.create({
   baseURL: API_URL,
 });

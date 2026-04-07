@@ -15,7 +15,7 @@ import DraftPicker from "./DraftPicker";
 import RecipientInput from "./RecipientInput";
 import AttachmentUpload from "./AttachmentUpload";
 import { useContext, useEffect, useRef, useState } from "react";
-import { userContext } from "../../../context/ContextProvider";
+import { userContext } from "../../../context/userContext";
 import { sendEmail } from "../../../utils/api.utils";
 import { toast } from "react-toastify";
 import { convertToHtml } from "../../../utils/fileUtils";
@@ -223,7 +223,7 @@ const EmailFormCard = ({
           setBody={setBody}
           setShowDraftPicker={setShowDraftPicker}
           addFiles={addDraftFiles}
-          setDraftId = {setDraftId}
+          setDraftId={setDraftId}
         />
       )}
 

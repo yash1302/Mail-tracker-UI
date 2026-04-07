@@ -1,10 +1,10 @@
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import OutreachTable from "../../common/OutreachTable";
 import SentEmailsHeader from "./SentEmailsHeader";
 import EmailDetailModal from "../../modals/EmailDetailModal";
 import { toast } from "react-toastify";
 import { getSentEmails } from "../../../utils/api.utils";
-import { userContext } from "../../../context/ContextProvider";
+import { userContext } from "../../../context/userContext";
 
 const SentEmailsCard = ({ setTab }) => {
   const [search, setSearch] = useState("");
@@ -15,7 +15,7 @@ const SentEmailsCard = ({ setTab }) => {
 
   const { accounts } = useContext(userContext);
 
-  const handleGetSentEmails = async () => {
+  const handleGetSentEmails = useCallback(async () => {
     setIsLoading(true); // ← start
     try {
       const result = await getSentEmails(
@@ -23,12 +23,13 @@ const SentEmailsCard = ({ setTab }) => {
         accounts[0].id,
       );
       setEmails(result.data);
-    } catch (error) {
+    } catch (_error) {
+      console.error(_error);
       toast.error("Failed to fetch sent emails. Please try again.");
     } finally {
       setIsLoading(false); // ← always stop
     }
-  };
+  }, [accounts]);
 
   useEffect(() => {
     const init = async () => {
@@ -37,7 +38,7 @@ const SentEmailsCard = ({ setTab }) => {
       }
     };
     init();
-  }, []);
+  }, [accounts, handleGetSentEmails]);
 
   const filtered = emails.filter((m) => {
     const q = search.toLowerCase();

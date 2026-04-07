@@ -1,10 +1,9 @@
 import { useContext } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import { userContext } from "../context/ContextProvider";
+import { userContext } from "../context/userContext";
 import Sidebar from "../components/sidebar/Sidebar.jsx";
 import Navbar from "../components/Navbar.jsx";
 import RequireGmail from "../utils/RequireGmail.jsx";
-
 
 const MainLayout = () => {
   const { accounts } = useContext(userContext);
@@ -13,8 +12,8 @@ const MainLayout = () => {
 
   // Routes that can be accessed without Gmail
   const allowedWithoutGmail = ["/settings"];
-  const isAllowedRoute = allowedWithoutGmail.some(route =>
-    location.pathname === route
+  const isAllowedRoute = allowedWithoutGmail.some(
+    (route) => location.pathname === route,
   );
 
   // If user doesn't have Gmail AND trying to access restricted route
@@ -28,7 +27,7 @@ const MainLayout = () => {
           <Navbar />
 
           <main className="flex-1 overflow-y-auto px-6 py-5">
-            <RequireGmail/>
+            <RequireGmail />
           </main>
         </div>
       </div>

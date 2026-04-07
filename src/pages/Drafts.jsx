@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { FiPaperclip, FiPlus, FiTrash2, FiRefreshCw } from "react-icons/fi";
 import DraftModal from "../components/drafts/DraftModal";
 import {
@@ -7,7 +7,7 @@ import {
   updateDraftApi,
   deleteDraftApi,
 } from "../utils/api.utils";
-import { userContext } from "../context/ContextProvider";
+import { userContext } from "../context/userContext";
 import { convertToHtml } from "../utils/fileUtils";
 import { toast } from "react-toastify";
 
@@ -125,7 +125,7 @@ const Drafts = () => {
     }
   };
 
-  const fetchDrafts = async () => {
+  const fetchDrafts = useCallback(async () => {
     setIsLoading(true);
     try {
       const res = await getDraftsApi({
@@ -146,18 +146,21 @@ const Drafts = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [accounts]);
 
   useEffect(() => {
     if (accounts?.length) fetchDrafts();
-  }, [accounts]);
+  }, [accounts, fetchDrafts]);
 
   return (
     <div className="flex flex-col gap-4 h-full">
       {/* Header */}
       <div className="flex justify-end">
         <button
-          onClick={() => { reset(); setModal(true); }}
+          onClick={() => {
+            reset();
+            setModal(true);
+          }}
           className="flex items-center gap-[7px] px-[16px] py-[8px] rounded-[10px] text-[13px] font-semibold bg-indigo-500 text-white hover:bg-indigo-600 transition hover:-translate-y-[1px] hover:shadow-[0_4px_12px_rgba(99,102,241,0.35)]"
         >
           <FiPlus size={14} />
@@ -170,24 +173,31 @@ const Drafts = () => {
           <table className="w-full text-[13px] border-collapse">
             <thead className="sticky top-0 z-[1]">
               <tr className="bg-[#fafafa] border-b border-slate-100">
-                {["Title", "Subject", "Body Preview", "Attachments", ""].map((h) => (
-                  <th
-                    key={h}
-                    className="text-left px-[18px] py-[10px] text-[10.5px] font-bold text-slate-400 uppercase tracking-[0.05em]"
-                  >
-                    {h}
-                  </th>
-                ))}
+                {["Title", "Subject", "Body Preview", "Attachments", ""].map(
+                  (h) => (
+                    <th
+                      key={h}
+                      className="text-left px-[18px] py-[10px] text-[10.5px] font-bold text-slate-400 uppercase tracking-[0.05em]"
+                    >
+                      {h}
+                    </th>
+                  ),
+                )}
               </tr>
             </thead>
 
             <tbody>
               {isLoading &&
-                Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)}
+                Array.from({ length: 5 }).map((_, i) => (
+                  <SkeletonRow key={i} />
+                ))}
 
               {!isLoading && drafts.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="py-[40px] text-center text-slate-300 text-[13px]">
+                  <td
+                    colSpan={5}
+                    className="py-[40px] text-center text-slate-300 text-[13px]"
+                  >
                     No drafts yet. Create your first one.
                   </td>
                 </tr>
@@ -218,7 +228,8 @@ const Drafts = () => {
                       {row.attachments?.length > 0 ? (
                         <span className="inline-flex items-center gap-[5px] bg-indigo-50 text-indigo-500 px-[9px] py-[3px] rounded-full text-[11px] font-semibold">
                           <FiPaperclip size={11} />
-                          {row.attachments.length} file{row.attachments.length > 1 ? "s" : ""}
+                          {row.attachments.length} file
+                          {row.attachments.length > 1 ? "s" : ""}
                         </span>
                       ) : (
                         <span className="text-slate-200 text-[12px]">—</span>
@@ -231,7 +242,10 @@ const Drafts = () => {
                         className="flex items-center justify-center w-[28px] h-[28px] rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition disabled:opacity-50 disabled:pointer-events-none"
                       >
                         {deletingId === row.id ? (
-                          <FiRefreshCw size={13} className="animate-spin text-slate-400" />
+                          <FiRefreshCw
+                            size={13}
+                            className="animate-spin text-slate-400"
+                          />
                         ) : (
                           <FiTrash2 size={14} />
                         )}

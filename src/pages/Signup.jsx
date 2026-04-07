@@ -10,7 +10,7 @@ import {
 } from "react-icons/fi";
 import AuthLayout from "../layouts/AuthLayout";
 import { useNavigate } from "react-router-dom";
-import { userContext } from "../context/ContextProvider";
+import { userContext } from "../context/userContext";
 import { signupUser } from "../utils/api.utils";
 import { toast } from "react-toastify";
 

@@ -10,7 +10,7 @@ import {
 } from "react-icons/fi";
 import { deleteGmailAccount } from "../utils/api.utils";
 import { toast } from "react-toastify";
-import { userContext } from "../context/ContextProvider";
+import { userContext } from "../context/userContext";
 import { isTokenExpired } from "../utils/fileUtils";
 import { useNavigate } from "react-router-dom";
 

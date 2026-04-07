@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AnalyticsCards from "../components/dashboard/AnalyticsCards";
 import FollowupQueue from "../components/dashboard/FollowupQueue";
@@ -10,7 +10,7 @@ import {
   getDashboardKPI,
   checkRepliesApi,
 } from "../utils/api.utils";
-import { userContext } from "../context/ContextProvider";
+import { userContext } from "../context/userContext";
 import { toast } from "react-toastify";
 
 const Dashboard = () => {
@@ -35,7 +35,7 @@ const Dashboard = () => {
     totalDrafts: 0,
   });
 
-  const handleGetKpi = async () => {
+  const handleGetKpi = useCallback(async () => {
     if (!accounts?.length) return;
     try {
       const result = await getDashboardKPI(
@@ -43,12 +43,12 @@ const Dashboard = () => {
         accounts[0].gmailAccountId,
       );
       setKpi(result.data.data);
-    } catch (error) {
-      console.error("Failed to fetch KPI:", error);
+    } catch (_error) {
+      console.error("Failed to fetch KPI:", _error);
     }
-  };
+  }, [accounts]);
 
-  const handleGetSentEmails = async () => {
+  const handleGetSentEmails = useCallback(async () => {
     if (!accounts?.length) return;
     setIsLoading(true);
     try {
@@ -57,16 +57,17 @@ const Dashboard = () => {
         accounts[0].id,
       );
       setEmails(result.data || []);
-    } catch (error) {
+    } catch (_error) {
+      console.error(_error);
       toast.error("Failed to fetch recent outreach.");
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [accounts]);
 
-  const refreshAll = async () => {
+  const refreshAll = useCallback(async () => {
     await Promise.all([handleGetKpi(), handleGetSentEmails()]);
-  };
+  }, [handleGetKpi, handleGetSentEmails]);
 
   // ← Check replies button handler (same as FollowUpQueue)
   const handleCheckReplies = async () => {
@@ -79,7 +80,8 @@ const Dashboard = () => {
       });
       toast.success("Checked for new replies! Updating dashboard...");
       await refreshAll();
-    } catch (error) {
+    } catch (_error) {
+      console.error(_error);
       toast.error("Failed to check replies. Please try again.");
     } finally {
       setIsRefreshing(false);
@@ -88,7 +90,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (accounts?.length) refreshAll();
-  }, [accounts]);
+  }, [accounts, refreshAll]);
 
   const recentOutreachPreview = emails.slice(0, 10).map((m) => {
     const email = (m.to || [])[0] || "";
