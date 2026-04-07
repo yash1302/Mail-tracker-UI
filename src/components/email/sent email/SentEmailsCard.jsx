@@ -31,7 +31,12 @@ const SentEmailsCard = ({ setTab }) => {
   };
 
   useEffect(() => {
-    handleGetSentEmails();
+    const init = async () => {
+      if (accounts?.length) {
+        await handleGetSentEmails();
+      }
+    };
+    init();
   }, []);
 
   const filtered = emails.filter((m) => {

@@ -5,7 +5,11 @@ import FollowupQueue from "../components/dashboard/FollowupQueue";
 import OutreachTable from "../components/common/OutreachTable.jsx";
 import EmailDetailModal from "../components/modals/EmailDetailModal";
 import FollowupModal from "../components/modals/FollowupModal";
-import { getSentEmails, getDashboardKPI, checkRepliesApi } from "../utils/api.utils";
+import {
+  getSentEmails,
+  getDashboardKPI,
+  checkRepliesApi,
+} from "../utils/api.utils";
 import { userContext } from "../context/ContextProvider";
 import { toast } from "react-toastify";
 

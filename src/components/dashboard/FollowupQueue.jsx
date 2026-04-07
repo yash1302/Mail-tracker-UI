@@ -32,9 +32,7 @@ const FollowupQueue = ({ openFollowupModal }) => {
       );
       const all = data?.data?.data || [];
       // only show non-replied, max 5
-      const filtered = all
-        .filter((m) => m.status !== "Replied")
-        .slice(0, 5);
+      const filtered = all.filter((m) => m.status !== "Replied").slice(0, 5);
       setLeads(filtered);
     } catch (error) {
       console.error("Error fetching follow-ups:", error);
@@ -44,7 +42,10 @@ const FollowupQueue = ({ openFollowupModal }) => {
   };
 
   useEffect(() => {
-    fetchFollowUps();
+    const init = async () => {
+      await fetchFollowUps();
+    };
+    init();
   }, [accounts]);
 
   return (
@@ -71,8 +72,12 @@ const FollowupQueue = ({ openFollowupModal }) => {
         {/* Empty state */}
         {!isLoading && leads.length === 0 && (
           <div className="py-8 text-center">
-            <p className="text-[12px] font-semibold text-slate-400">All clear!</p>
-            <p className="text-[11px] text-slate-300 mt-1">No follow-ups needed right now.</p>
+            <p className="text-[12px] font-semibold text-slate-400">
+              All clear!
+            </p>
+            <p className="text-[11px] text-slate-300 mt-1">
+              No follow-ups needed right now.
+            </p>
           </div>
         )}
 
@@ -87,7 +92,8 @@ const FollowupQueue = ({ openFollowupModal }) => {
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <p className="text-[12px] font-semibold text-slate-900 truncate">
-                    {lead.name ?? (lead.to?.[0] || lead.email || "").split("@")[0]}
+                    {lead.name ??
+                      (lead.to?.[0] || lead.email || "").split("@")[0]}
                   </p>
                   <p className="text-[10.5px] text-slate-400 truncate">
                     {lead.to?.[0] || lead.email}

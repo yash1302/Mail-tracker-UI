@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 import {
   FiEdit3,
   FiChevronDown,
@@ -24,8 +24,20 @@ const DAY_MS = 86400000;
 const MAX_FILE_SIZE = 25 * 1024 * 1024;
 const MAX_TOTAL_SIZE = 25 * 1024 * 1024;
 const ALLOWED_EXTENSIONS = [
-  "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx",
-  "txt", "csv", "zip", "jpg", "jpeg", "png", "gif",
+  "pdf",
+  "doc",
+  "docx",
+  "xls",
+  "xlsx",
+  "ppt",
+  "pptx",
+  "txt",
+  "csv",
+  "zip",
+  "jpg",
+  "jpeg",
+  "png",
+  "gif",
 ];
 
 const formatFileSize = (bytes) => {
@@ -44,24 +56,30 @@ const isFileTypeAllowed = (filename) =>
 const getFileIcon = (filename) => {
   const ext = getFileExtension(filename);
   const iconMap = {
-    pdf: "text-red-500", doc: "text-blue-500", docx: "text-blue-500",
-    xls: "text-green-500", xlsx: "text-green-500", ppt: "text-orange-500",
-    pptx: "text-orange-500", txt: "text-gray-500", csv: "text-green-600",
-    zip: "text-purple-500", jpg: "text-indigo-500", jpeg: "text-indigo-500",
-    png: "text-indigo-500", gif: "text-indigo-500",
+    pdf: "text-red-500",
+    doc: "text-blue-500",
+    docx: "text-blue-500",
+    xls: "text-green-500",
+    xlsx: "text-green-500",
+    ppt: "text-orange-500",
+    pptx: "text-orange-500",
+    txt: "text-gray-500",
+    csv: "text-green-600",
+    zip: "text-purple-500",
+    jpg: "text-indigo-500",
+    jpeg: "text-indigo-500",
+    png: "text-indigo-500",
+    gif: "text-indigo-500",
   };
-  return <FiFile className={`w-4 h-4 ${iconMap[ext] || "text-gray-400"}`} size={14} />;
+  return (
+    <FiFile
+      className={`w-4 h-4 ${iconMap[ext] || "text-gray-400"}`}
+      size={14}
+    />
+  );
 };
 
 const FollowupModal = ({ lead, onClose }) => {
-  if (!lead) return null;
-
-  const name = lead.to[0].split("@")[0];
-  const daysSince = Math.floor(
-    (Date.now() - new Date(lead.sentAt).getTime()) / DAY_MS,
-  );
-  const hue = (name.charCodeAt(0) * 17) % 360;
-
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [attachments, setAttachments] = useState([]);
@@ -73,8 +91,21 @@ const FollowupModal = ({ lead, onClose }) => {
   const [draftId, setDraftId] = useState(null);
 
   const { accounts } = useContext(userContext);
+  const now = useMemo(() => Date.now(), []);
 
-  const totalAttachmentSize = attachments.reduce((sum, file) => sum + (file.size || 0), 0);
+  if (!lead) return null;
+
+  const name = lead.to[0].split("@")[0];
+
+  const daysSince = Math.floor(
+    (now - new Date(lead.sentAt).getTime()) / DAY_MS,
+  );
+  const hue = (name.charCodeAt(0) * 17) % 360;
+
+  const totalAttachmentSize = attachments.reduce(
+    (sum, file) => sum + (file.size || 0),
+    0,
+  );
 
   const addDraftFiles = (files) => {
     const nf = files.map((f) => ({
@@ -94,7 +125,9 @@ const FollowupModal = ({ lead, onClose }) => {
 
     Array.from(files).forEach((file) => {
       if (file.size > MAX_FILE_SIZE) {
-        errors.push(`${file.name} exceeds max file size (${formatFileSize(MAX_FILE_SIZE)})`);
+        errors.push(
+          `${file.name} exceeds max file size (${formatFileSize(MAX_FILE_SIZE)})`,
+        );
         return;
       }
       if (!isFileTypeAllowed(file.name)) {
@@ -117,7 +150,9 @@ const FollowupModal = ({ lead, onClose }) => {
       totalAttachmentSize + validFiles.reduce((s, f) => s + f.size, 0) >
       MAX_TOTAL_SIZE
     ) {
-      errors.push(`Total attachment size exceeds limit (${formatFileSize(MAX_TOTAL_SIZE)})`);
+      errors.push(
+        `Total attachment size exceeds limit (${formatFileSize(MAX_TOTAL_SIZE)})`,
+      );
       return;
     }
 
@@ -127,10 +162,19 @@ const FollowupModal = ({ lead, onClose }) => {
 
   const handleFileChange = (e) => validateAndAddFiles(e.target.files);
 
-  const handleDragOver = (e) => { e.preventDefault(); e.stopPropagation(); setDragActive(true); };
-  const handleDragLeave = (e) => { e.preventDefault(); e.stopPropagation(); setDragActive(false); };
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(true);
+  };
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+  };
   const handleDrop = (e) => {
-    e.preventDefault(); e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
     setDragActive(false);
     validateAndAddFiles(e.dataTransfer.files);
   };
@@ -194,12 +238,17 @@ const FollowupModal = ({ lead, onClose }) => {
           <div className="flex items-center gap-3">
             <div
               className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm"
-              style={{ background: `hsl(${hue},55%,88%)`, color: `hsl(${hue},45%,35%)` }}
+              style={{
+                background: `hsl(${hue},55%,88%)`,
+                color: `hsl(${hue},45%,35%)`,
+              }}
             >
               {name[0]}
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-900">Follow-up to {name}</h2>
+              <h2 className="text-sm font-bold text-slate-900">
+                Follow-up to {name}
+              </h2>
               <p className="text-xs text-slate-400">
                 {lead.to[0]} · {daysSince} days since original
               </p>
@@ -211,14 +260,19 @@ const FollowupModal = ({ lead, onClose }) => {
               onClick={() => setShowDraftPicker(!showDraftPicker)}
               disabled={sending}
               className={`flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-md border transition disabled:opacity-50 disabled:cursor-not-allowed
-              ${showDraftPicker
-                ? "bg-indigo-600 text-white border-indigo-600"
-                : "bg-indigo-50 text-indigo-600 border-indigo-200"
+              ${
+                showDraftPicker
+                  ? "bg-indigo-600 text-white border-indigo-600"
+                  : "bg-indigo-50 text-indigo-600 border-indigo-200"
               }`}
             >
               <FiEdit3 size={12} />
               Draft
-              {showDraftPicker ? <FiChevronUp size={12} /> : <FiChevronDown size={12} />}
+              {showDraftPicker ? (
+                <FiChevronUp size={12} />
+              ) : (
+                <FiChevronDown size={12} />
+              )}
             </button>
 
             <button
@@ -234,13 +288,13 @@ const FollowupModal = ({ lead, onClose }) => {
         <div className="px-6 py-2 bg-amber-50 border-b border-amber-200 flex items-center gap-2">
           <FiAlertCircle size={13} className="text-amber-700" />
           <p className="text-xs text-amber-900">
-            Original: <strong>{lead.subject}</strong> · sent {daysSince} days ago · {lead.opens} open{lead.opens !== 1 ? "s" : ""}
+            Original: <strong>{lead.subject}</strong> · sent {daysSince} days
+            ago · {lead.opens} open{lead.opens !== 1 ? "s" : ""}
           </p>
         </div>
 
         {/* FORM — DraftPicker lives inside scroll container */}
         <div className="px-6 py-5 flex flex-col gap-4 max-h-[600px] overflow-y-auto">
-
           {/* DRAFT PICKER — inside scroll so it doesn't push outside screen */}
           {showDraftPicker && (
             <DraftPicker
@@ -279,7 +333,9 @@ const FollowupModal = ({ lead, onClose }) => {
               className={`${fld} resize-none leading-relaxed disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50`}
               placeholder="Enter your message"
             />
-            <p className="text-right text-xs text-slate-300 mt-1">{message.length} chars</p>
+            <p className="text-right text-xs text-slate-300 mt-1">
+              {message.length} chars
+            </p>
           </div>
 
           {/* ATTACHMENTS */}
@@ -302,8 +358,8 @@ const FollowupModal = ({ lead, onClose }) => {
                 dragActive
                   ? "border-indigo-500 bg-indigo-50 cursor-copy"
                   : sending
-                  ? "border-slate-200 bg-slate-50 opacity-50 cursor-not-allowed"
-                  : "border-slate-300 bg-slate-50 hover:bg-slate-100 cursor-pointer"
+                    ? "border-slate-200 bg-slate-50 opacity-50 cursor-not-allowed"
+                    : "border-slate-300 bg-slate-50 hover:bg-slate-100 cursor-pointer"
               }`}
             >
               <input
@@ -327,7 +383,8 @@ const FollowupModal = ({ lead, onClose }) => {
                     Drop files here or click to browse
                   </p>
                   <p className="text-[11px] text-slate-500 mt-1">
-                    Max {formatFileSize(MAX_FILE_SIZE)} per file · Total {formatFileSize(MAX_TOTAL_SIZE)}
+                    Max {formatFileSize(MAX_FILE_SIZE)} per file · Total{" "}
+                    {formatFileSize(MAX_TOTAL_SIZE)}
                   </p>
                 </div>
               </label>
@@ -336,7 +393,10 @@ const FollowupModal = ({ lead, onClose }) => {
             {/* Error */}
             {attachmentError && (
               <div className="mt-2 flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <FiAlertTriangle size={14} className="text-red-500 mt-0.5 flex-shrink-0" />
+                <FiAlertTriangle
+                  size={14}
+                  className="text-red-500 mt-0.5 flex-shrink-0"
+                />
                 <p className="text-xs text-red-700">{attachmentError}</p>
               </div>
             )}
@@ -379,8 +439,11 @@ const FollowupModal = ({ lead, onClose }) => {
                 {/* Total size */}
                 <div className="flex items-center justify-between text-[11px] text-slate-600 px-3 py-2 border border-slate-200 rounded-lg">
                   <span>Total size:</span>
-                  <span className={`font-semibold ${totalAttachmentSize > MAX_TOTAL_SIZE * 0.8 ? "text-amber-600" : "text-slate-600"}`}>
-                    {formatFileSize(totalAttachmentSize)} / {formatFileSize(MAX_TOTAL_SIZE)}
+                  <span
+                    className={`font-semibold ${totalAttachmentSize > MAX_TOTAL_SIZE * 0.8 ? "text-amber-600" : "text-slate-600"}`}
+                  >
+                    {formatFileSize(totalAttachmentSize)} /{" "}
+                    {formatFileSize(MAX_TOTAL_SIZE)}
                   </span>
                 </div>
               </div>
@@ -401,11 +464,18 @@ const FollowupModal = ({ lead, onClose }) => {
           ) : (
             <button
               onClick={sendFollowUp}
-              disabled={!subject.trim() || !message.trim() || sending || totalAttachmentSize > MAX_TOTAL_SIZE}
+              disabled={
+                !subject.trim() ||
+                !message.trim() ||
+                sending ||
+                totalAttachmentSize > MAX_TOTAL_SIZE
+              }
               className="px-4 py-2 text-sm font-bold rounded-md bg-indigo-600 text-white flex items-center gap-1 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
             >
               {sending ? (
-                <><FiRefreshCw className="animate-spin" size={13} /> Sending...</>
+                <>
+                  <FiRefreshCw className="animate-spin" size={13} /> Sending...
+                </>
               ) : (
                 <>
                   <FiSend size={13} />
