@@ -1,19 +1,18 @@
 import { createBrowserRouter } from "react-router-dom";
-import MainLayout from "./layouts/mainLayout";
-import Dashboard from "./pages/Dashboard";
-import Drafts from "./pages/Drafts";
-import SendEmails from "./pages/SendEmails";
-import Followups from "./pages/Followups";
-import Signup from "./pages/Signup";
-import Login from "./pages/Login";
-import Settings from "./pages/Settings";
-import HomeRedirect from "./utils/HomeRedirect";
-import PublicRoute from "./utils/PublicRoute";
-import ProtectedRoute from "./utils/ProtectedRoute";
-import LandingPage from "./pages/LandingPage";
+import MainLayout from "./layouts/MainLayout.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
+import Drafts from "./pages/Drafts.jsx";
+import SendEmails from "./pages/SendEmails.jsx";
+import Followups from "./pages/Followups.jsx";
+import Signup from "./pages/Signup.jsx";
+import Login from "./pages/Login.jsx";
+import Settings from "./pages/Settings.jsx";
+import HomeRedirect from "./utils/HomeRedirect.jsx";
+import PublicRoute from "./utils/PublicRoute.jsx";
+import ProtectedRoute from "./utils/ProtectedRoute.jsx";
+import LandingPage from "./pages/LandingPage.jsx";
 
 export const router = createBrowserRouter([
-
   {
     path: "/",
     element: <HomeRedirect />,

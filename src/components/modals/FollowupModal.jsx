@@ -14,10 +14,10 @@ import {
   FiFile,
   FiAlertTriangle,
 } from "react-icons/fi";
-import DraftPicker from "../email/compose email/DraftPicker";
-import { convertToHtml } from "../../utils/fileUtils";
-import { userContext } from "../../context/userContext";
-import { sendEmail } from "../../utils/api.utils";
+import DraftPicker from "../email/compose email/DraftPicker.jsx";
+import { convertToHtml } from "../../utils/fileUtils.js";
+import { userContext } from "../../context/userContext.js";
+import { sendEmail } from "../../utils/api.utils.js";
 import { toast } from "react-toastify";
 
 const DAY_MS = 86400000;

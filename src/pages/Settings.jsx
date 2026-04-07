@@ -8,10 +8,10 @@ import {
   FiX,
   FiAlertCircle,
 } from "react-icons/fi";
-import { deleteGmailAccount } from "../utils/api.utils";
+import { deleteGmailAccount } from "../utils/api.utils.js";
 import { toast } from "react-toastify";
-import { userContext } from "../context/userContext";
-import { isTokenExpired } from "../utils/fileUtils";
+import { userContext } from "../context/userContext.js";
+import { isTokenExpired } from "../utils/fileUtils.js";
 import { useNavigate } from "react-router-dom";
 
 const GoogleIcon = ({ size = 16 }) => (

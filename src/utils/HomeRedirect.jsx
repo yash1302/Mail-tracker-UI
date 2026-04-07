@@ -1,9 +1,5 @@
-// components/HomeRedirect.jsx
 import { Navigate } from "react-router-dom";
-import Dashboard from "../pages/Dashboard";
-import LandingPage from "../pages/LandingPage";
-import { isAuthenticated } from "./auth";
-import MainLayout from "../layouts/mainLayout";
+import { isAuthenticated } from "./auth.js";
 
 const HomeRedirect = () => {
   return isAuthenticated() ? (

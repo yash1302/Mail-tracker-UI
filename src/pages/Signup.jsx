@@ -3,15 +3,14 @@ import {
   FiEye,
   FiEyeOff,
   FiCheck,
-  FiRefreshCw,
   FiUser,
   FiMail,
   FiLock,
 } from "react-icons/fi";
-import AuthLayout from "../layouts/AuthLayout";
+import AuthLayout from "../layouts/AuthLayout.jsx";
 import { useNavigate } from "react-router-dom";
-import { userContext } from "../context/userContext";
-import { signupUser } from "../utils/api.utils";
+import { userContext } from "../context/userContext.js";
+import { signupUser } from "../utils/api.utils.js";
 import { toast } from "react-toastify";
 
 const token = {

@@ -1,5 +1,11 @@
-import { FiSend, FiRefreshCw, FiMessageSquare, FiTrendingUp, FiEye } from "react-icons/fi";
-import AnalyticsCard from "./AnalyticsCard";
+import {
+  FiSend,
+  FiRefreshCw,
+  FiMessageSquare,
+  FiTrendingUp,
+  FiEye,
+} from "react-icons/fi";
+import AnalyticsCard from "./AnalyticsCard.jsx";
 
 const AnalyticsCards = ({ kpi, onRefresh, isRefreshing = false }) => {
   const {
@@ -77,7 +83,10 @@ const AnalyticsCards = ({ kpi, onRefresh, isRefreshing = false }) => {
           disabled={isRefreshing}
           className="flex items-center gap-[6px] px-3 py-1.5 rounded-md border border-indigo-200 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition"
         >
-          <FiRefreshCw size={12} className={isRefreshing ? "animate-spin" : ""} />
+          <FiRefreshCw
+            size={12}
+            className={isRefreshing ? "animate-spin" : ""}
+          />
           {isRefreshing ? "Checking replies…" : "Check Replies"}
         </button>
       </div>

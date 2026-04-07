@@ -1,11 +1,11 @@
 import { FiSearch, FiCheck, FiRefreshCw } from "react-icons/fi";
-import FilterTabs from "./FilterTabs";
-import FollowUpRow from "./FollowUpRow";
+import FilterTabs from "./FilterTabs.jsx";
+import FollowUpRow from "./FollowUpRow.jsx";
 import { useContext, useState } from "react";
-import FollowupModal from "../modals/FollowupModal";
+import FollowupModal from "../modals/FollowupModal.jsx";
 import { toast } from "react-toastify";
-import { checkRepliesApi } from "../../utils/api.utils";
-import { userContext } from "../../context/userContext";
+import { checkRepliesApi } from "../../utils/api.utils.js";
+import { userContext } from "../../context/userContext.js";
 
 const SkeletonRow = () => (
   <div className="flex items-center gap-4 px-5 py-4 border-b border-slate-100 animate-pulse">

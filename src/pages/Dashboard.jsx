@@ -1,16 +1,16 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AnalyticsCards from "../components/dashboard/AnalyticsCards";
-import FollowupQueue from "../components/dashboard/FollowupQueue";
+import AnalyticsCards from "../components/dashboard/AnalyticsCards.jsx";
+import FollowupQueue from "../components/dashboard/FollowupQueue.jsx";
 import OutreachTable from "../components/common/OutreachTable.jsx";
-import EmailDetailModal from "../components/modals/EmailDetailModal";
-import FollowupModal from "../components/modals/FollowupModal";
+import EmailDetailModal from "../components/modals/EmailDetailModal.jsx";
+import FollowupModal from "../components/modals/FollowupModal.jsx";
 import {
   getSentEmails,
   getDashboardKPI,
   checkRepliesApi,
-} from "../utils/api.utils";
-import { userContext } from "../context/userContext";
+} from "../utils/api.utils.js";
+import { userContext } from "../context/userContext.js";
 import { toast } from "react-toastify";
 
 const Dashboard = () => {

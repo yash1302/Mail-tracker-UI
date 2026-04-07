@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { FiLogOut } from "react-icons/fi";
-import { userContext } from "../../context/userContext";
+import { userContext } from "../../context/userContext.js";
 import { useNavigate } from "react-router-dom";
 
 const UserProfile = () => {

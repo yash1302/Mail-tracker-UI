@@ -14,12 +14,12 @@ import {
   FiTrash2,
 } from "react-icons/fi";
 import { BsPaperclip } from "react-icons/bs";
-import { downloadAttachment, sendEmail } from "../../utils/api.utils";
+import { downloadAttachment, sendEmail } from "../../utils/api.utils.js";
 import { useContext, useRef, useState } from "react";
-import { userContext } from "../../context/userContext";
-import { convertToHtml } from "../../utils/fileUtils";
+import { userContext } from "../../context/userContext.js";
+import { convertToHtml } from "../../utils/fileUtils.js";
 import { toast } from "react-toastify";
-import DraftPicker from "../email/compose email/DraftPicker";
+import DraftPicker from "../email/compose email/DraftPicker.jsx";
 
 const statusColors = {
   Replied: "bg-green-100 text-green-700",

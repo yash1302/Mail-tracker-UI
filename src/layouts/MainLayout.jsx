@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import { userContext } from "../context/userContext";
+import { userContext } from "../context/userContext.js";
 import Sidebar from "../components/sidebar/Sidebar.jsx";
 import Navbar from "../components/Navbar.jsx";
 import RequireGmail from "../utils/RequireGmail.jsx";

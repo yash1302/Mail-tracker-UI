@@ -1,5 +1,5 @@
 import { FiX, FiCornerUpRight } from "react-icons/fi";
-import Modal from "../../common/Modal";
+import Modal from "../../common/Modal.jsx";
 
 const ViewEmailModal = ({
   viewEmail,

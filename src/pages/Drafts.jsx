@@ -1,14 +1,14 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import { FiPaperclip, FiPlus, FiTrash2, FiRefreshCw } from "react-icons/fi";
-import DraftModal from "../components/drafts/DraftModal";
+import DraftModal from "../components/drafts/DraftModal.jsx";
 import {
   createDraftApi,
   getDraftsApi,
   updateDraftApi,
   deleteDraftApi,
-} from "../utils/api.utils";
-import { userContext } from "../context/userContext";
-import { convertToHtml } from "../utils/fileUtils";
+} from "../utils/api.utils.js";
+import { userContext } from "../context/userContext.js";
+import { convertToHtml } from "../utils/fileUtils.js";
 import { toast } from "react-toastify";
 
 const SkeletonRow = () => (

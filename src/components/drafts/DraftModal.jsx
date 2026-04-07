@@ -1,6 +1,6 @@
 import { FiX, FiEdit, FiRefreshCw } from "react-icons/fi";
-import AttachmentZone from "./AttachmentZone";
-import AttachmentList from "./AttachmentList";
+import AttachmentZone from "./AttachmentZone.jsx";
+import AttachmentList from "./AttachmentList.jsx";
 
 const DraftModal = ({
   modalMode,
@@ -72,7 +72,9 @@ const DraftModal = ({
             </label>
             {isView ? (
               <p className="text-[13px] font-semibold text-slate-900">
-                {title || <span className="text-slate-300 font-normal">No title</span>}
+                {title || (
+                  <span className="text-slate-300 font-normal">No title</span>
+                )}
               </p>
             ) : (
               <input
@@ -92,7 +94,9 @@ const DraftModal = ({
             </label>
             {isView ? (
               <p className="text-[14px] font-semibold text-slate-900">
-                {subject || <span className="text-slate-300 font-normal">No subject</span>}
+                {subject || (
+                  <span className="text-slate-300 font-normal">No subject</span>
+                )}
               </p>
             ) : (
               <input
@@ -197,8 +201,10 @@ const DraftModal = ({
                       <FiRefreshCw size={13} className="animate-spin" />
                       {isEdit ? "Saving…" : "Creating…"}
                     </>
+                  ) : isEdit ? (
+                    "Save Changes"
                   ) : (
-                    isEdit ? "Save Changes" : "Save Draft"
+                    "Save Draft"
                   )}
                 </button>
               </>

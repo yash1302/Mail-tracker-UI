@@ -1,13 +1,9 @@
 import { FiFile, FiImage } from "react-icons/fi";
-import { formatBytes, isImg } from "../../utils/fileUtils";
+import { formatBytes, isImg } from "../../utils/fileUtils.js";
 
 const AttachmentList = ({ attachments }) => {
   if (!attachments?.length)
-    return (
-      <p className="text-[13px] text-slate-300 italic">
-        No attachments
-      </p>
-    );
+    return <p className="text-[13px] text-slate-300 italic">No attachments</p>;
 
   return (
     <div className="flex flex-wrap gap-[7px]">
@@ -18,13 +14,9 @@ const AttachmentList = ({ attachments }) => {
         >
           {isImg(f) ? <FiImage size={13} /> : <FiFile size={13} />}
 
-          <span className="max-w-[130px] truncate">
-            {f.filename}
-          </span>
+          <span className="max-w-[130px] truncate">{f.filename}</span>
 
-          <span className="text-slate-300">
-            · {formatBytes(f.size)}
-          </span>
+          <span className="text-slate-300">· {formatBytes(f.size)}</span>
         </span>
       ))}
     </div>

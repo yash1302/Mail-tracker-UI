@@ -1,5 +1,5 @@
-import { apiConfig } from "./api.config";
-import axiosclient from "./axios-client";
+import { apiConfig } from "./api.config.js";
+import axiosclient from "./axios-client.js";
 const {
   USER_SINGUP,
   USER_LOGIN,
@@ -24,11 +24,9 @@ export const signupUser = async (userData) => {
 
 export const loginUser = async (userData) => {
   try {
-
     const response = await axiosclient.post(USER_LOGIN, userData);
     return response.data;
   } catch (error) {
-
     throw error.response.data.message;
   }
 };
@@ -54,7 +52,6 @@ export const deleteGmailAccount = async (gmailAccountId) => {
 
 export const sendEmail = async (emailData) => {
   try {
-
     const response = await axiosclient.post(SEND_MAIL, emailData, {
       headers: {
         "Content-Type": "application/form-data",
@@ -62,7 +59,6 @@ export const sendEmail = async (emailData) => {
     });
     return response.data;
   } catch (error) {
-
     throw error.response.data.message;
   }
 };

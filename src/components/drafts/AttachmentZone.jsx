@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { FiPaperclip, FiFile, FiX } from "react-icons/fi";
-import { formatBytes, isImg } from "../../utils/fileUtils";
+import { formatBytes, isImg } from "../../utils/fileUtils.js";
 
 const AttachmentZone = ({ attachments, onChange }) => {
   const ref = useRef(null);
@@ -8,14 +8,13 @@ const AttachmentZone = ({ attachments, onChange }) => {
 
   const add = (files) => {
     const nf = Array.from(files).filter(
-      (f) => !attachments.find((a) => a.name === f.name && a.size === f.size)
+      (f) => !attachments.find((a) => a.name === f.name && a.size === f.size),
     );
     onChange([...attachments, ...nf]);
   };
 
   return (
     <div className="flex flex-col gap-2">
-
       {/* Drop zone */}
       <div
         onDragOver={(e) => {
@@ -42,14 +41,10 @@ const AttachmentZone = ({ attachments, onChange }) => {
 
         <p className="text-[12.5px] text-slate-500">
           Drop files or{" "}
-          <span className="text-indigo-500 font-semibold">
-            browse
-          </span>
+          <span className="text-indigo-500 font-semibold">browse</span>
         </p>
 
-        <p className="text-[11px] text-slate-300">
-          Any file type · up to 10MB
-        </p>
+        <p className="text-[11px] text-slate-300">Any file type · up to 10MB</p>
 
         <input
           ref={ref}

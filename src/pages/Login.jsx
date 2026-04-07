@@ -8,11 +8,11 @@ import {
   FiLock,
   FiZap,
 } from "react-icons/fi";
-import AuthLayout from "../layouts/AuthLayout";
+import AuthLayout from "../layouts/AuthLayout.jsx";
 import { useNavigate } from "react-router-dom";
-import { loginUser } from "../utils/api.utils";
+import { loginUser } from "../utils/api.utils.js";
 import { toast } from "react-toastify";
-import { userContext } from "../context/userContext";
+import { userContext } from "../context/userContext.js";
 
 /* ─── design tokens (mirrors SignupPage) ─────────────────────── */
 const token = {

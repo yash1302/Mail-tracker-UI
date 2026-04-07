@@ -9,7 +9,7 @@ import {
   FiCheck,
   FiRefreshCw,
 } from "react-icons/fi";
-import { updateFollowUpStatusApi } from "../../utils/api.utils";
+import { updateFollowUpStatusApi } from "../../utils/api.utils.js";
 import { toast } from "react-toastify";
 
 const FollowUpRow = ({ row, index, length, openCompose, setQueue }) => {

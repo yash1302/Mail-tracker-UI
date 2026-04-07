@@ -1,4 +1,4 @@
-import { statusConfig } from "../../utils/statusConfig";
+import { statusConfig } from "../../utils/statusConfig.jsx";
 
 const SkeletonRow = () => (
   <tr className="border-b border-slate-50 animate-pulse">
@@ -27,7 +27,11 @@ const SkeletonRow = () => (
   </tr>
 );
 
-const OutreachTable = ({ recentOutreachPreview, setViewMail, isLoading = false }) => {
+const OutreachTable = ({
+  recentOutreachPreview,
+  setViewMail,
+  isLoading = false,
+}) => {
   return (
     <div className="bg-white border-slate-100 shadow-sm flex flex-col h-full">
       <div className="flex-1 overflow-y-auto">
@@ -35,14 +39,16 @@ const OutreachTable = ({ recentOutreachPreview, setViewMail, isLoading = false }
           {/* Header */}
           <thead className="sticky top-0 z-[1]">
             <tr className="bg-[#fafafa] border-b border-slate-100">
-              {["Recipient", "Email Preview", "Sent Date", "Status"].map((h) => (
-                <th
-                  key={h}
-                  className="text-left px-[14px] py-[8px] text-[10px] font-bold text-slate-400 uppercase tracking-[0.05em]"
-                >
-                  {h}
-                </th>
-              ))}
+              {["Recipient", "Email Preview", "Sent Date", "Status"].map(
+                (h) => (
+                  <th
+                    key={h}
+                    className="text-left px-[14px] py-[8px] text-[10px] font-bold text-slate-400 uppercase tracking-[0.05em]"
+                  >
+                    {h}
+                  </th>
+                ),
+              )}
             </tr>
           </thead>
 
@@ -54,7 +60,10 @@ const OutreachTable = ({ recentOutreachPreview, setViewMail, isLoading = false }
             {/* Empty state */}
             {!isLoading && recentOutreachPreview.length === 0 && (
               <tr>
-                <td colSpan={4} className="py-16 text-center text-slate-300 text-[13px]">
+                <td
+                  colSpan={4}
+                  className="py-16 text-center text-slate-300 text-[13px]"
+                >
                   No emails found.
                 </td>
               </tr>

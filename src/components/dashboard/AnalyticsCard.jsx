@@ -1,4 +1,4 @@
-import Sparkbar from "./Sparkbar";
+import Sparkbar from "./Sparkbar.jsx";
 
 const AnalyticsCard = ({ title, Icon, color, bg, stats, index }) => {
   return (

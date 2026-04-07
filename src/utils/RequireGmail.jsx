@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { userContext } from "../context/userContext";
+import { userContext } from "../context/userContext.js";
 import { useNavigate } from "react-router-dom";
 
 const RequireGmail = ({ children }) => {

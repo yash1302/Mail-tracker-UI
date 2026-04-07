@@ -9,12 +9,12 @@ import {
   FiSettings,
 } from "react-icons/fi";
 
-import SidebarItem from "./SidebarItem";
-import SidebarSection from "./SidebarSection";
+import SidebarItem from "./SidebarItem.jsx";
+import SidebarSection from "./SidebarSection.jsx";
 import UserProfile from "./UserProfile.jsx";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useContext } from "react";
-import { userContext } from "../../context/userContext";
+import { userContext } from "../../context/userContext.js";
 
 const Sidebar = () => {
   const location = useLocation();

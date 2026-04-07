@@ -1,8 +1,8 @@
 import { useCallback, useContext, useEffect, useState } from "react";
-import FollowUpQueueCard from "../components/followups/FollowUpQueueCard";
-import FollowUpQueue from "../components/followups/FollowUpQueue";
-import { userContext } from "../context/userContext";
-import { getFollowUpsApi } from "../utils/api.utils";
+import FollowUpQueueCard from "../components/followups/FollowUpQueueCard.jsx";
+import FollowUpQueue from "../components/followups/FollowUpQueue.jsx";
+import { userContext } from "../context/userContext.js";
+import { getFollowUpsApi } from "../utils/api.utils.js";
 
 const FOLLOWUP_THRESHOLD_DAYS = 7;
 

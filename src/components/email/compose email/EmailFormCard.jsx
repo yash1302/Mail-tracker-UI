@@ -11,14 +11,14 @@ import {
   FiLink2,
 } from "react-icons/fi";
 
-import DraftPicker from "./DraftPicker";
-import RecipientInput from "./RecipientInput";
-import AttachmentUpload from "./AttachmentUpload";
+import DraftPicker from "./DraftPicker.jsx";
+import RecipientInput from "./RecipientInput.jsx";
+import AttachmentUpload from "./AttachmentUpload.jsx";
 import { useContext, useEffect, useRef, useState } from "react";
-import { userContext } from "../../../context/userContext";
-import { sendEmail } from "../../../utils/api.utils";
+import { userContext } from "../../../context/userContext.js";
+import { sendEmail } from "../../../utils/api.utils.js";
 import { toast } from "react-toastify";
-import { convertToHtml } from "../../../utils/fileUtils";
+import { convertToHtml } from "../../../utils/fileUtils.js";
 
 const EmailFormCard = ({
   setSubject,

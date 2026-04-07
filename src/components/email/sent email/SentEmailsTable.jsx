@@ -1,18 +1,15 @@
-import SentEmailRow from "./SentEmailRow";
+import SentEmailRow from "./SentEmailRow.jsx";
 
 const SentEmailsTable = ({
   filtered,
   sentStatusConfig,
   setViewEmail,
-  setSentList
+  setSentList,
 }) => {
-
   return (
     <table className="w-full border-collapse text-[13px]">
-
       <thead>
         <tr className="bg-slate-50 border-b border-slate-100">
-
           {[
             "Recipient",
             "Subject",
@@ -20,8 +17,8 @@ const SentEmailsTable = ({
             "Status",
             "Opens",
             "Replies",
-            ""
-          ].map((h)=>(
+            "",
+          ].map((h) => (
             <th
               key={h}
               className="text-left px-[16px] py-[9px] text-[10.5px] font-bold text-slate-400 uppercase tracking-[0.05em]"
@@ -29,13 +26,11 @@ const SentEmailsTable = ({
               {h}
             </th>
           ))}
-
         </tr>
       </thead>
 
       <tbody>
-
-        {filtered.map((row,i)=>(
+        {filtered.map((row, i) => (
           <SentEmailRow
             key={i}
             row={row}
@@ -44,9 +39,7 @@ const SentEmailsTable = ({
             setSentList={setSentList}
           />
         ))}
-
       </tbody>
-
     </table>
   );
 };

@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getFollowUpsApi } from "../../utils/api.utils";
-import { userContext } from "../../context/userContext";
+import { getFollowUpsApi } from "../../utils/api.utils.js";
+import { userContext } from "../../context/userContext.js";
 
 const SkeletonRow = () => (
   <div className="flex flex-col gap-[6px] py-[10px] border-b border-slate-50 animate-pulse">

@@ -1,10 +1,10 @@
 import { useCallback, useContext, useEffect, useState } from "react";
-import OutreachTable from "../../common/OutreachTable";
-import SentEmailsHeader from "./SentEmailsHeader";
-import EmailDetailModal from "../../modals/EmailDetailModal";
+import OutreachTable from "../../common/OutreachTable.jsx";
+import SentEmailsHeader from "./SentEmailsHeader.jsx";
+import EmailDetailModal from "../../modals/EmailDetailModal.jsx";
 import { toast } from "react-toastify";
-import { getSentEmails } from "../../../utils/api.utils";
-import { userContext } from "../../../context/userContext";
+import { getSentEmails } from "../../../utils/api.utils.js";
+import { userContext } from "../../../context/userContext.js";
 
 const SentEmailsCard = ({ setTab }) => {
   const [search, setSearch] = useState("");
