@@ -27,10 +27,13 @@ const ContextProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      fetchAccounts();
-    }
+    const init = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        await fetchAccounts();
+      }
+    };
+    init();
   }, []);
 
   return (

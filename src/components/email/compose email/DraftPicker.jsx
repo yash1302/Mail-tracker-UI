@@ -3,7 +3,13 @@ import { useContext, useEffect, useState } from "react";
 import { getDraftsApi } from "../../../utils/api.utils";
 import { userContext } from "../../../context/ContextProvider";
 
-const DraftPicker = ({ setSubject, setBody, setShowDraftPicker, addFiles,setDraftId }) => {
+const DraftPicker = ({
+  setSubject,
+  setBody,
+  setShowDraftPicker,
+  addFiles,
+  setDraftId,
+}) => {
   const [drafts, setDrafts] = useState([]);
 
   const { accounts } = useContext(userContext);
@@ -30,8 +36,13 @@ const DraftPicker = ({ setSubject, setBody, setShowDraftPicker, addFiles,setDraf
   };
 
   useEffect(() => {
-    fetchDrafts();
-  }, []);
+    const init = async () => {
+      if (accounts?.length) {
+        await fetchDrafts();
+      }
+    };
+    init();
+  }, [accounts]);
 
   return (
     <div className="px-[22px] py-[14px] bg-[#f8faff] border-b border-slate-200">

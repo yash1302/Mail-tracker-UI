@@ -13,7 +13,7 @@ import ProtectedRoute from "./utils/ProtectedRoute";
 import LandingPage from "./pages/LandingPage";
 
 export const router = createBrowserRouter([
-  // 🔥 Root route (important)
+
   {
     path: "/",
     element: <HomeRedirect />,
