@@ -20,7 +20,6 @@ export const isTokenExpired = (token) => {
   try {
     const decoded = jwtDecode(token);
     const currentTime = Date.now() / 1000;
-    console.log("Decoded JWT:", decoded, "Current Time:", currentTime);
 
     return decoded.exp < currentTime;
   } catch {

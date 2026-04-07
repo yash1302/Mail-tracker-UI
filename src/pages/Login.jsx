@@ -199,7 +199,7 @@ const Login = () => {
 
   const onLogin = async () => {
     try {
-      console.log("Logging in with:", { email, password });
+
       const result = await loginUser({ email, password });
       localStorage.setItem("token", result.data);
       fetchAccounts();

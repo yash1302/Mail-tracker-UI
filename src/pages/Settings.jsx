@@ -181,7 +181,7 @@ const Settings = () => {
   };
 
   const disconnect = async () => {
-    console.log("Disconnecting account:", pendingDisconnect);
+
     if (!pendingDisconnect) return;
     await deleteGmailAccount(accounts[0]?.gmailAccountId);
     await fetchAccounts();

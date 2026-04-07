@@ -27,11 +27,11 @@ export const signupUser = async (userData) => {
 
 export const loginUser = async (userData) => {
   try {
-    console.log("Logging in with:", userData);
+
     const response = await axiosclient.post(USER_LOGIN, userData);
     return response.data;
   } catch (error) {
-    console.log(error, "error in loginUser api--------");
+
     throw error.response.data.message;
   }
 };
@@ -57,7 +57,7 @@ export const deleteGmailAccount = async (gmailAccountId) => {
 
 export const sendEmail = async (emailData) => {
   try {
-    console.log("Sending email with data:", emailData);
+
     const response = await axiosclient.post(SEND_MAIL, emailData, {
       headers: {
         "Content-Type": "application/form-data",
@@ -65,7 +65,7 @@ export const sendEmail = async (emailData) => {
     });
     return response.data;
   } catch (error) {
-    console.log("Error in sendEmail API:", error);
+
     throw error.response.data.message;
   }
 };
@@ -91,12 +91,6 @@ export const downloadAttachment = async ({
   userId,
 }) => {
   try {
-    console.log("Downloading attachment with params:", {
-      messageId,
-      filename,
-      gmailAccountId,
-      userId,
-    });
     const response = await axiosclient.get(
       `${DOWNLOAD_ATTACHMENT}/${messageId}/${filename}`,
       {
