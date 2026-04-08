@@ -59,7 +59,7 @@ const SentEmailsCard = ({ setTab }) => {
       ...m,
       name,
       email,
-      message: m.preview || m.subject,
+      message: m.htmlBody,
       date: new Date(m.sentAt).toLocaleDateString(),
     };
   });

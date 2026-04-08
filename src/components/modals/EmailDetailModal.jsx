@@ -248,9 +248,14 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
                 Message
               </p>
               <div className="bg-slate-50 border border-slate-100 rounded-[12px] px-[16px] py-[14px] max-h-[130px] overflow-y-auto">
-                <p className="text-[13.5px] text-slate-700 leading-[1.75] whitespace-pre-line">
-                  {viewMail.message}
-                </p>
+                <div
+                  className="text-[13.5px] text-slate-700 [&>a]:text-indigo-500 [&>a]:underline"
+                  dangerouslySetInnerHTML={{
+                    __html:
+                      viewMail.message ||
+                      "<span class='text-slate-300'>No content</span>",
+                  }}
+                />
               </div>
             </div>
             <div className="border-t border-slate-100" />

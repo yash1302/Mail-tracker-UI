@@ -77,7 +77,7 @@ const AttachmentZone = ({ attachments, onChange }) => {
 
               <div className="flex-1 min-w-0">
                 <p className="text-[12.5px] font-semibold text-slate-900 truncate">
-                  {f.filename}
+                  {f.filename || f.name}
                 </p>
 
                 <p className="text-[10.5px] text-slate-400">

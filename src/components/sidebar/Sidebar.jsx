@@ -22,8 +22,8 @@ const Sidebar = () => {
   const activeFromPath = location.pathname.split("/")[1];
   const menu = [
     { name: "Dashboard", key: "dashboard", Icon: FiGrid },
-    { name: "Drafts", key: "drafts", Icon: FiEdit3 },
     { name: "Send Emails", key: "send_mail", Icon: FiSend },
+    { name: "Drafts", key: "drafts", Icon: FiEdit3 },
     { name: "Follow-ups", key: "followups", Icon: FiClock },
   ];
   const navigate = useNavigate();

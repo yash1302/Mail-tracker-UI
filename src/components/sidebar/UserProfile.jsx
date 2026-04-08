@@ -8,6 +8,7 @@ const UserProfile = () => {
   const navigate = useNavigate();
   const handleLogout = () => {
     localStorage.removeItem("token");
+    window.location.reload();
     navigate("/");
   };
   return (

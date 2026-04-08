@@ -110,7 +110,7 @@ const OutreachTable = ({
                     {/* Message preview */}
                     <td className="px-[14px] py-[10px] max-w-[200px]">
                       <p className="text-slate-500 truncate max-w-[180px]">
-                        {row.message}
+                        {row.preview}
                       </p>
                     </td>
 

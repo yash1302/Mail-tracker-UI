@@ -76,7 +76,7 @@ const Drafts = () => {
     setIsSaving(true); // ← start
     try {
       const formData = new FormData();
-      const htmlBody = convertToHtml(body);
+      const htmlBody = document.querySelector("[contenteditable]")?.innerHTML;
       formData.append("title", title);
       formData.append("subject", subject);
       formData.append("body", htmlBody);
@@ -152,6 +152,16 @@ const Drafts = () => {
     if (accounts?.length) fetchDrafts();
   }, [accounts, fetchDrafts]);
 
+  const getPreviewText = (html) => {
+    return html
+      .replace(/&nbsp;/gi, " ")
+      .replace(/<style[^>]*>.*?<\/style>/gi, "")
+      .replace(/<script[^>]*>.*?<\/script>/gi, "")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
+
   return (
     <div className="flex flex-col gap-4 h-full">
       {/* Header */}
@@ -219,10 +229,9 @@ const Drafts = () => {
                       {row.subject}
                     </td>
                     <td className="px-[18px] py-[14px] text-slate-500 max-w-[280px]">
-                      <span
-                        className="block truncate max-w-[260px]"
-                        dangerouslySetInnerHTML={{ __html: row.body }}
-                      />
+                      <span className="block truncate max-w-[260px]">
+                        {getPreviewText(row.body)}
+                      </span>
                     </td>
                     <td className="px-[18px] py-[14px]">
                       {row.attachments?.length > 0 ? (

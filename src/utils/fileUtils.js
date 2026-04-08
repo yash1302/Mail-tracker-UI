@@ -9,10 +9,16 @@ export const formatBytes = (b) =>
 
 export const isImg = (file) => file?.type?.startsWith("image/");
 
+const escapeHtml = (str) =>
+  str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
 export const convertToHtml = (text) => {
   return text
     .split("\n")
-    .map((line) => `<p>${line}</p>`)
+    .map((line) => {
+      const safe = escapeHtml(line.trim());
+      return `<p>${safe || "&nbsp;"}</p>`;
+    })
     .join("");
 };
 

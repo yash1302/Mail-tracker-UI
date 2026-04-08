@@ -1,6 +1,7 @@
 import { FiX, FiEdit, FiRefreshCw } from "react-icons/fi";
 import AttachmentZone from "./AttachmentZone.jsx";
 import AttachmentList from "./AttachmentList.jsx";
+import { useRef, useEffect } from "react";
 
 const DraftModal = ({
   modalMode,
@@ -19,7 +20,13 @@ const DraftModal = ({
 }) => {
   const isView = modalMode === "view";
   const isEdit = modalMode === "edit";
+  const editorRef = useRef(null);
 
+  useEffect(() => {
+    if (editorRef.current && body) {
+      editorRef.current.innerHTML = body;
+    }
+  }, [modalMode]);
   return (
     <div
       className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50"
@@ -117,18 +124,20 @@ const DraftModal = ({
               Email Body
             </label>
             {isView ? (
-              <p className="text-[13px] text-slate-700 leading-[1.65] whitespace-pre-line">
-                {body || <span className="text-slate-300">No content.</span>}
-              </p>
+              <div
+                className="text-[13px] text-slate-700"
+                dangerouslySetInnerHTML={{
+                  __html:
+                    body || "<span class='text-slate-300'>No content.</span>",
+                }}
+              />
             ) : (
               <>
-                <textarea
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                  rows={5}
-                  placeholder="Write your outreach email…"
-                  disabled={isSaving}
-                  className="w-full border border-slate-200 rounded-[9px] px-[12px] py-[9px] text-[13px] text-slate-700 outline-none resize-none leading-[1.6] focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50"
+                <div
+                  ref={editorRef}
+                  contentEditable
+                  suppressContentEditableWarning={true}
+                  className="w-full border border-slate-200 rounded-[9px] px-[12px] py-[9px] text-[13px] min-h-[120px] outline-none"
                 />
                 <p className="text-right text-[11px] text-slate-300 mt-[4px]">
                   {body.length} characters

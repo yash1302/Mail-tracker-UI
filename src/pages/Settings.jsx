@@ -36,7 +36,7 @@ const GoogleIcon = ({ size = 16 }) => (
 );
 
 /* ── Disconnect confirmation modal ── */
-const DisconnectModal = ({ account, onConfirm, onCancel }) => {
+const DisconnectModal = ({ account, onConfirm, onCancel, isLoading }) => {
   if (!account) return null;
 
   return (
@@ -118,10 +118,15 @@ const DisconnectModal = ({ account, onConfirm, onCancel }) => {
             </button>
             <button
               onClick={onConfirm}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] font-bold text-white bg-red-500 hover:bg-red-600 active:scale-95 transition-all shadow-md shadow-red-100"
+              disabled={isLoading}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] font-bold text-white bg-red-500 hover:bg-red-600 disabled:opacity-60 disabled:cursor-not-allowed active:scale-95 transition-all shadow-md shadow-red-100"
             >
-              <FiTrash2 size={13} />
-              Yes, disconnect
+              {isLoading ? (
+                <span className="animate-spin h-3 w-3 border-2 border-white border-t-transparent rounded-full" />
+              ) : (
+                <FiTrash2 size={13} />
+              )}
+              {isLoading ? "Disconnecting..." : "Yes, disconnect"}
             </button>
           </div>
         </div>
@@ -164,6 +169,7 @@ const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 const Settings = () => {
   const [pendingDisconnect, setPendingDisconnect] = useState(null);
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
 
   const { accounts, fetchAccounts } = useContext(userContext);
   const navigate = useNavigate();
@@ -182,10 +188,18 @@ const Settings = () => {
 
   const disconnect = async () => {
     if (!pendingDisconnect) return;
-    await deleteGmailAccount(accounts[0]?.gmailAccountId);
-    await fetchAccounts();
-    toast.success(`${pendingDisconnect.email} disconnected successfully.`);
-    setPendingDisconnect(null);
+    setIsDisconnecting(true);
+    try {
+      await deleteGmailAccount(accounts[0]?.gmailAccountId);
+      await fetchAccounts();
+      toast.success(`${pendingDisconnect.email} disconnected successfully.`);
+      setPendingDisconnect(null);
+    } catch (error) {
+      toast.error("Failed to disconnect account. Please try again.");
+      console.error("Error disconnecting account:", error);
+    } finally {
+      setIsDisconnecting(false);
+    }
   };
 
   const fmtDate = (d) =>
@@ -202,6 +216,7 @@ const Settings = () => {
         account={pendingDisconnect}
         onConfirm={disconnect}
         onCancel={() => setPendingDisconnect(null)}
+        isLoading={isDisconnecting}
       />
 
       <div className="flex flex-col gap-6 w-full">

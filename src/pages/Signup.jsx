@@ -6,6 +6,7 @@ import {
   FiUser,
   FiMail,
   FiLock,
+  FiRefreshCw,
 } from "react-icons/fi";
 import AuthLayout from "../layouts/AuthLayout.jsx";
 import { useNavigate } from "react-router-dom";
@@ -163,6 +164,9 @@ const css = `
     font-weight: 500;
   }
 
+    @keyframes lp-spin { to { transform: rotate(360deg); } }
+  .lp-spin { animation: lp-spin 0.75s linear infinite; }
+
   .sp-checkbox {
     width: 18px; height: 18px;
     border-radius: 6px;
@@ -194,6 +198,7 @@ const SignupPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [errors, setErrors] = useState({});
   const [agreed, setAgreed] = useState(false);
@@ -203,6 +208,7 @@ const SignupPage = () => {
   const navigate = useNavigate();
 
   const onSignup = async () => {
+    setLoading(true);
     try {
       const result = await signupUser({
         name: name.trim(),
@@ -218,6 +224,8 @@ const SignupPage = () => {
       setActive("dashboard");
     } catch (error) {
       toast.error(error || "Signup failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -440,7 +448,21 @@ const SignupPage = () => {
             onClick={submit}
             style={{ marginTop: 6 }}
           >
-            "Create account →"
+            {loading ? (
+              <span
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 9,
+                }}
+              >
+                <FiRefreshCw size={14} className="lp-spin" />
+                Creating account
+              </span>
+            ) : (
+              "Create account →"
+            )}
           </button>
         </div>
 

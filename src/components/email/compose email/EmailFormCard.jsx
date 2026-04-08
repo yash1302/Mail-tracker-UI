@@ -18,7 +18,6 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { userContext } from "../../../context/userContext.js";
 import { sendEmail } from "../../../utils/api.utils.js";
 import { toast } from "react-toastify";
-import { convertToHtml } from "../../../utils/fileUtils.js";
 
 const EmailFormCard = ({
   setSubject,
@@ -39,9 +38,11 @@ const EmailFormCard = ({
   const [ccRecipients, setCCRecipients] = useState([]);
   const [bccRecipients, setBCCRecipients] = useState([]);
   const fileRef = useRef(null);
+  const editorRef = useRef(null);
   const [canSend, setCanSend] = useState(false);
   const [containsLinks, setContainsLinks] = useState(false);
   const [draftId, setDraftId] = useState(null);
+  const [editorContent, setEditorContent] = useState("");
 
   const { accounts } = useContext(userContext);
 
@@ -122,6 +123,13 @@ const EmailFormCard = ({
     setAttachments((p) => [...p, ...nf]);
   };
 
+  const handleEditorInput = (e) => {
+    const html = e.currentTarget.innerHTML;
+    setEditorContent(html);
+    setBody(html);
+    setContainsLinks(hasLinks(html));
+  };
+
   const handleSend = async () => {
     try {
       const targets = [
@@ -129,17 +137,15 @@ const EmailFormCard = ({
         ...(recipientInput.trim() ? [recipientInput.trim()] : []),
       ];
 
-      if (!targets.length || !subject.trim() || !body.trim()) return;
+      if (!targets.length || !subject.trim() || !editorContent.trim()) return;
 
       setSending(true);
-
-      const htmlBody = convertToHtml(body);
 
       const formData = new FormData();
       formData.append("gmailAccountId", accounts?.[0]?.gmailAccountId);
       formData.append("userId", accounts?.[0]?.id);
       formData.append("subject", subject);
-      formData.append("body", htmlBody);
+      formData.append("body", editorContent);
       formData.append("to", JSON.stringify(targets));
       formData.append("cc", JSON.stringify(ccRecipients));
       formData.append("bcc", JSON.stringify(bccRecipients));
@@ -155,11 +161,18 @@ const EmailFormCard = ({
 
       await sendEmail(formData);
 
+      // Reset form
       setRecipients([]);
       setRecipientInput("");
       setSubject("");
       setBody("");
+      setEditorContent("");
       setAttachments([]);
+      setDraftId(null);
+      setCCRecipients([]);
+      setBCCRecipients([]);
+
+      toast.success("Email sent successfully!");
     } catch (error) {
       console.error("Error sending email:", error);
       toast.error("Failed to send email. Please try again.");
@@ -176,12 +189,16 @@ const EmailFormCard = ({
   }, [recipients, recipientInput, setAllTo]);
 
   useEffect(() => {
-    setCanSend(allTo.length > 0 && subject.trim() && body.trim());
-  }, [allTo, subject, body]);
+    const text = editorContent.replace(/<[^>]*>/g, "").trim();
+    setCanSend(allTo.length > 0 && subject.trim() && text.length > 0);
+  }, [allTo, subject, editorContent]);
 
   useEffect(() => {
-    setContainsLinks(hasLinks(body));
-  }, [body]);
+    if (body && editorContent !== body) {
+      setEditorContent(body);
+      setContainsLinks(hasLinks(body));
+    }
+  }, [body, draftId]);
 
   return (
     <div className="bg-white rounded-2xl border border-slate-100 overflow-y-scroll h-full shadow-sm">
@@ -297,15 +314,15 @@ const EmailFormCard = ({
             <FiAlignLeft size={11} />
             Message
           </label>
-          <textarea
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            rows={8}
-            placeholder="Write your email here…"
-            disabled={sending}
-            className="w-full border border-slate-200 rounded-[10px] px-[13px] py-[10px] text-[13px] resize-none leading-[1.65] text-slate-700 bg-white outline-none transition focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50"
+          <div
+            contentEditable
+            ref={editorRef}
+            suppressContentEditableWarning={true}
+            onInput={handleEditorInput}
+            className="w-full border border-slate-200 rounded-[10px] px-[13px] py-[10px] text-[13px] min-h-[150px] outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200"
+            dangerouslySetInnerHTML={{ __html: editorContent }}
           />
-          {!containsLinks && body.trim() && (
+          {!containsLinks && editorContent.trim() && (
             <div className="flex items-start gap-[6px] text-[11px] text-amber-600 bg-amber-50 border border-amber-200 rounded-[8px] px-[10px] py-[8px]">
               <FiLink2 size={12} className="mt-[2px]" />
               <span>
@@ -315,7 +332,7 @@ const EmailFormCard = ({
             </div>
           )}
           <p className="text-right text-[11px] text-slate-300">
-            {body.length} chars
+            {editorContent.length} chars
           </p>
         </div>
 
@@ -343,8 +360,8 @@ const EmailFormCard = ({
             disabled={!canSend || sending}
             className={`flex items-center gap-[7px] px-[16px] py-[8px] rounded-[10px] text-[13px] font-semibold transition
               ${
-                canSend
-                  ? "bg-indigo-500 text-white hover:bg-indigo-600"
+                canSend && !sending
+                  ? "bg-indigo-500 text-white hover:bg-indigo-600 cursor-pointer"
                   : "bg-indigo-500 text-white opacity-45 cursor-not-allowed"
               }`}
           >

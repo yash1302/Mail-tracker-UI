@@ -27,6 +27,7 @@ const DraftPicker = ({
         subject: d.subject,
         body: d.textBody,
         attachments: d.attachments || [],
+        htmlBody: d.htmlBody,
       }));
 
       setDrafts(formatted);
@@ -56,7 +57,7 @@ const DraftPicker = ({
             key={i}
             onClick={() => {
               setSubject(d.subject);
-              setBody(d.body);
+              setBody(d.htmlBody || d.body);
               setShowDraftPicker(false);
               addFiles(d.attachments);
               setDraftId(d.id);
