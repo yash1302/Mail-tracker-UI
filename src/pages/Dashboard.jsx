@@ -92,18 +92,32 @@ const Dashboard = () => {
     if (accounts?.length) refreshAll();
   }, [accounts, refreshAll]);
 
-  const recentOutreachPreview = emails.slice(0, 10).map((m) => {
-    const email = (m.to || [])[0] || "";
+
+  const formattedEmails = emails.slice(0, 10).map((thread) => {
+    const messages = thread.messages || [];
+    const lastMessage = messages[messages.length - 1] || {};
+
+    const email = (lastMessage.to || [])[0] || "";
+
     const name = email
       .split("@")[0]
       .replace(/[._]/g, " ")
       .replace(/\b\w/g, (c) => c.toUpperCase());
+    console.log("Formatting thread:", thread);
     return {
-      ...m,
+      threadId: thread.threadId,
       name,
       email,
-      message: m.preview || m.subject,
-      date: new Date(m.sentAt).toLocaleDateString(),
+      preview: lastMessage.preview || "",
+      subject: lastMessage.subject || "",
+      status: lastMessage.isReplied ? "Replied" : "Sent",
+      date: new Date(thread.lastActivityAt).toLocaleDateString(),
+      openCount: lastMessage.opensCount || 0,
+      clicksCount: thread.totalClicks || 0,
+      messages: messages,
+      followUpCount: messages.filter((m) => m.type === "followup").length,
+      replies: messages.filter((m) => m.type === "reply").length,
+      isReplied: messages.some((m) => m.type === "reply"),
     };
   });
 
@@ -132,7 +146,7 @@ const Dashboard = () => {
             </button>
           </div>
           <OutreachTable
-            recentOutreachPreview={recentOutreachPreview}
+            recentOutreachPreview={formattedEmails}
             setViewMail={setViewMail}
             isLoading={isLoading}
           />

@@ -120,7 +120,7 @@ const EmailFormCard = ({
       size: f.size,
       mimeType: f.mimeType,
     }));
-    setAttachments((p) => [...p, ...nf]);
+    setAttachments(nf);
   };
 
   const handleEditorInput = (e) => {

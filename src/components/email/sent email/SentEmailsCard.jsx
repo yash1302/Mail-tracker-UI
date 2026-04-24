@@ -57,10 +57,7 @@ const SentEmailsCard = ({ setTab }) => {
 
   const formattedEmails = filtered.map((thread) => {
 
-    console.log("Formatting thread:", thread);
     const messages = thread.messages || [];
-
-    // 🔥 latest message (important)
     const lastMessage = messages[messages.length - 1] || {};
 
     const email = (lastMessage.to || [])[0] || "";
@@ -72,21 +69,17 @@ const SentEmailsCard = ({ setTab }) => {
 
     return {
       threadId: thread.threadId,
-
-      // for table
       name,
       email,
       preview: lastMessage.preview || "",
       subject: lastMessage.subject || "",
-      status: lastMessage.isReplied ? "Replied" : "Sent",
+      status: thread.isReplied ? "Replied" : "Sent",
       date: new Date(thread.lastActivityAt).toLocaleDateString(),
       openCount: lastMessage.opensCount || 0,
-      clicksCount: lastMessage.clicksCount || 0,
-
-      // thread data (VERY IMPORTANT for modal)
+      clicksCount: thread.totalClicks || 0,
       messages: messages,
       followUpCount: messages.filter((m) => m.type === "followup").length,
-      replies: messages.filter((m) => m.type === "reply").length,
+      replies: thread.replies,
       isReplied: messages.some((m) => m.type === "reply"),
     };
   });

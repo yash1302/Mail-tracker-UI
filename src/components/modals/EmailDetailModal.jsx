@@ -15,9 +15,7 @@ import {
   // FiReply,
   FiClock,
 } from "react-icons/fi";
-import {
-  sendFollowupApi,
-} from "../../utils/api.utils.js";
+import { sendFollowupApi } from "../../utils/api.utils.js";
 import { useContext, useRef, useState } from "react";
 import { userContext } from "../../context/userContext.js";
 import { convertToHtml } from "../../utils/fileUtils.js";
@@ -80,59 +78,103 @@ const getFileIconColor = (filename) => {
   return map[ext] || "text-gray-400";
 };
 
-const ThreadItem = ({ item, isReply = false, isFollowUp = false, hue }) => {
+const ThreadItem = ({ item, hue }) => {
   const [expandedAttachments, setExpandedAttachments] = useState(false);
   const [showRecipients, setShowRecipients] = useState(false);
   const [expandedBody, setExpandedBody] = useState(false);
 
+  const isIncoming = item.direction === "incoming";
+  const isOutgoing = item.direction === "outgoing";
+  const isFollowUp = item.type === "followup" && isOutgoing;
+
+  const { accounts } = useContext(userContext);
+
+  const cleanHtml = (html = "") => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+
+    doc.querySelectorAll("img, style, script").forEach((el) => el.remove());
+
+    const allElements = doc.body.querySelectorAll("*");
+
+    allElements.forEach((el) => {
+      const tag = el.tagName.toLowerCase();
+
+      const style = el.getAttribute("style") || "";
+
+      if (/font-weight\s*:\s*(bold|bolder|[5-9]00)/i.test(style)) {
+        const strong = doc.createElement("strong");
+        strong.innerHTML = el.innerHTML;
+        el.replaceWith(strong);
+        return;
+      }
+
+      el.removeAttribute("style");
+      el.removeAttribute("class");
+
+      if (tag !== "p" && tag !== "span" && tag !== "strong" && tag !== "b") {
+        const parent = el.parentNode;
+        while (el.firstChild) {
+          parent.insertBefore(el.firstChild, el);
+        }
+        parent.removeChild(el);
+      }
+    });
+
+    return doc.body.innerHTML.trim();
+  };
+
+  const getAvatarContent = () => {
+    if (isIncoming) {
+      return item.from?.[0]?.toUpperCase() || "U";
+    }
+    return accounts?.[0]?.user?.name?.[0]?.toUpperCase() || "Y";
+  };
+
   return (
     <div
-      className={`border rounded-[12px] p-[14px] transition ${
-        isReply
-          ? "border-green-200 bg-green-50"
+      className={`border rounded-[14px] px-[16px] py-[14px] max-w-[80%] ${
+        isIncoming
+          ? "border-green-100 bg-white mr-auto"
           : isFollowUp
-            ? "border-indigo-200 bg-indigo-50"
-            : "border-slate-200 bg-slate-50 hover:bg-slate-100"
+            ? "border-indigo-100 bg-white ml-auto"
+            : "border-slate-200 bg-white ml-auto"
       }`}
     >
-      {/* Header */}
-      <div className="flex items-start justify-between mb-[10px]">
+      {/* HEADER */}
+      <div className="flex items-start justify-between mb-[8px]">
         <div className="flex items-center gap-[10px]">
+          {/* Avatar */}
           <div
-            className="w-[32px] h-[32px] rounded-full flex items-center justify-center text-[12px] font-bold shrink-0"
-            style={{
-              background: isReply
-                ? "#dcfce7"
+            className={`w-[32px] h-[32px] rounded-full flex items-center justify-center text-[12px] font-bold ${
+              isIncoming
+                ? "bg-green-100 text-green-700"
                 : isFollowUp
-                  ? "#e0e7ff"
-                  : `hsl(${hue},55%,88%)`,
-              color: isReply
-                ? "#166534"
-                : isFollowUp
-                  ? "#312e81"
-                  : `hsl(${hue},45%,35%)`,
-            }}
+                  ? "bg-indigo-100 text-indigo-700"
+                  : "bg-slate-100 text-slate-700"
+            }`}
           >
-            {item.type === "reply" ? <FiClock size={14} /> : "Y"}
+            {getAvatarContent()}
           </div>
-          <div className="min-w-0">
+
+          {/* Name + Time */}
+          <div>
             <p className="text-[12.5px] font-semibold text-slate-900">
-              {item.type === "reply" ? item.from : "You"}
+              {isOutgoing ? "You" : item.from}
             </p>
-            <p className="text-[10.5px] text-slate-500 flex items-center gap-[4px]">
-              <FiClock size={10} />
-              {new Date(
-                item.sentAt || item.timestamp || item.date,
-              ).toLocaleString()}
+            <p className="text-[10.5px] text-slate-400">
+              {new Date(item.sentAt || item.timestamp).toLocaleString()}
             </p>
           </div>
         </div>
 
-        {/* Type badge */}
-        {!isReply && (
+        {/* Badge */}
+        {!isIncoming && (
           <span
-            className={`text-[10px] font-bold px-[8px] py-[3px] rounded-full whitespace-nowrap text-white flex-shrink-0 ${
-              isFollowUp ? "bg-indigo-500" : "bg-slate-500"
+            className={`text-[10px] px-[8px] py-[2px] rounded-full font-semibold ${
+              isFollowUp
+                ? "bg-indigo-100 text-indigo-600"
+                : "bg-slate-100 text-slate-600"
             }`}
           >
             {isFollowUp ? "Follow-up" : "Original"}
@@ -140,83 +182,41 @@ const ThreadItem = ({ item, isReply = false, isFollowUp = false, hue }) => {
         )}
       </div>
 
-      {/* Recipients */}
-      {!isReply && (item.cc?.length > 0 || item.bcc?.length > 0) && (
-        <div className="mb-[8px]">
-          <button
-            onClick={() => setShowRecipients(!showRecipients)}
-            className="text-[10.5px] text-indigo-500 font-semibold"
-          >
-            {showRecipients ? "Hide details" : "Show CC / BCC"}
-          </button>
-
-          {showRecipients && (
-            <div className="mt-[4px] text-[10.5px] text-slate-500 space-y-[2px]">
-              {item.cc?.length > 0 && (
-                <div>
-                  <span className="font-semibold">Cc:</span>{" "}
-                  {item.cc.join(", ")}
-                </div>
-              )}
-              {item.bcc?.length > 0 && (
-                <div>
-                  <span className="font-semibold">Bcc:</span>{" "}
-                  {item.bcc.join(", ")}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Subject */}
+      {/* SUBJECT */}
       {item.subject && (
-        <div className="mb-[8px]">
-          <p className="text-[12px] font-bold text-slate-900">{item.subject}</p>
-        </div>
+        <p className="text-[12px] font-semibold text-slate-800 mb-[6px]">
+          {item.subject}
+        </p>
       )}
 
-      {/* Content */}
-      <div
-        className={`mb-[10px] rounded-[9px] p-[10px] ${
-          isReply ? "bg-white border border-green-100" : "bg-white"
-        }`}
-      >
+      {/* BODY */}
+      <div className="text-[13px] text-slate-700 leading-[1.6]">
         <div
-          className={`text-[12px] text-slate-700 leading-[1.6] overflow-hidden ${
-            !expandedBody ? "max-h-[80px]" : ""
-          }`}
+          className={`${!expandedBody ? "max-h-[80px] overflow-hidden" : ""}`}
           dangerouslySetInnerHTML={{
-            __html: item.htmlBody || item.message || "<em>No content</em>",
+            __html: cleanHtml(item.htmlBody || item.message || ""),
           }}
         />
 
-        {/* Toggle */}
-        {(item.htmlBody || item.message)?.length > 200 && (
+        {(item.htmlBody || "").length > 200 && (
           <button
             onClick={() => setExpandedBody(!expandedBody)}
-            className="mt-[6px] text-[10.5px] font-semibold text-indigo-500"
+            className="mt-[4px] text-[11px] text-indigo-500 font-semibold"
           >
             {expandedBody ? "Show less" : "Read more"}
           </button>
         )}
       </div>
 
-      {/* Attachments */}
+      {/* ATTACHMENTS */}
       {item.attachmentsMeta?.length > 0 && (
-        <div className="mb-[8px]">
+        <div className="mt-[10px]">
           <button
             onClick={() => setExpandedAttachments(!expandedAttachments)}
-            className="flex items-center gap-[6px] text-[11px] font-semibold text-slate-600 hover:text-slate-900 mb-[8px]"
+            className="text-[11px] text-slate-500 font-medium mb-[6px]"
           >
-            <FiPaperclip size={11} />
             {item.attachmentsMeta.length} attachment
-            {item.attachmentsMeta.length !== 1 ? "s" : ""}
-            {expandedAttachments ? (
-              <FiChevronUp size={10} />
-            ) : (
-              <FiChevronDown size={10} />
-            )}
+            {item.attachmentsMeta.length > 1 ? "s" : ""}
           </button>
 
           {expandedAttachments && (
@@ -224,25 +224,20 @@ const ThreadItem = ({ item, isReply = false, isFollowUp = false, hue }) => {
               {item.attachmentsMeta.map((file, i) => (
                 <div
                   key={i}
-                  className="flex items-center justify-between bg-slate-100 border border-slate-200 rounded-[9px] px-[10px] py-[7px] hover:bg-slate-150 transition"
+                  className="flex items-center justify-between border border-slate-200 rounded-[8px] px-[10px] py-[6px]"
                 >
-                  <div className="flex items-center gap-[8px] min-w-0">
-                    <FiFile
-                      size={12}
-                      className={getFileIconColor(file.filename)}
-                    />
-                    <div className="min-w-0">
-                      <p className="text-[11px] font-semibold text-slate-900 truncate">
-                        {file.filename}
-                      </p>
-                      <p className="text-[9.5px] text-slate-500">
-                        {formatFileSize(file.size)}
-                      </p>
-                    </div>
-                  </div>
-                  <button className="text-indigo-500 hover:text-indigo-700 text-[10px] font-semibold flex-shrink-0 ml-[8px]">
-                    DL
-                  </button>
+                  <p className="text-[11px] text-slate-700 truncate">
+                    {file.filename}
+                  </p>
+
+                  <a
+                    href={file.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-indigo-500 text-[11px] font-medium"
+                  >
+                    Download
+                  </a>
                 </div>
               ))}
             </div>
@@ -250,100 +245,16 @@ const ThreadItem = ({ item, isReply = false, isFollowUp = false, hue }) => {
         </div>
       )}
 
-      {/* Stats (for sent items only) */}
-      {!isReply && (
-        <div className="flex gap-[12px] text-[10.5px] text-slate-500 pt-[8px] border-t border-slate-200">
-          <span>📧 Opens: {item.opensCount || 0}</span>
+      {/* STATS */}
+      {!isIncoming && (
+        <div className="flex gap-[10px] text-[10.5px] text-slate-400 mt-[8px] pt-[6px] border-t border-slate-100">
+          <span>Opens: {item.opensCount || 0}</span>
           <span>•</span>
-          <span>🔗 Clicks: {item.clicksCount || 0}</span>
+          <span>Clicks: {item.clicksCount || 0}</span>
         </div>
       )}
     </div>
   );
-};
-
-export const demoViewMail = {
-  name: "John Doe",
-  email: "john@example.com",
-  subject: "Detailed Project Proposal Discussion",
-  status: "Opened",
-  sentAt: new Date().toISOString(),
-
-  cc: ["manager@company.com", "teamlead@company.com"],
-  bcc: ["internal@company.com"],
-
-  htmlBody: `
-    <p>Hi John,</p>
-    <p>
-      I hope you're doing well. I wanted to follow up regarding the project proposal we discussed earlier.
-      Please find the attached documents which include detailed breakdowns of the scope, timelines,
-      deliverables, and cost estimations.
-    </p>
-    <p>
-      The proposal outlines multiple phases of execution including planning, development,
-      testing, and deployment. Each phase has been carefully structured to ensure timely delivery
-      while maintaining high quality standards.
-    </p>
-    <p>
-      Additionally, we have included technical documentation and supporting materials to help your
-      team better understand the architecture and implementation approach.
-    </p>
-    <p>
-      Please review the attachments and let me know if you have any questions or require further clarification.
-      Looking forward to your feedback.
-    </p>
-    <p>Best regards,<br/>Yash</p>
-  `,
-
-  openCount: 5,
-  clicksCount: 2,
-
-  attachmentsMeta: [
-    { filename: "Proposal.pdf", size: 2400000 },
-    { filename: "Architecture.docx", size: 1800000 },
-    { filename: "Costing.xlsx", size: 950000 },
-    { filename: "Timeline.pptx", size: 2100000 },
-    { filename: "Assets.zip", size: 5200000 },
-  ],
-
-  followUps: [
-    {
-      subject: "Follow-up: Proposal Review",
-      htmlBody: `
-    <p>Hi John,</p>
-    <p>
-      I hope you're doing well. I wanted to follow up regarding the project proposal we discussed earlier.
-      Please find the attached documents which include detailed breakdowns of the scope, timelines,
-      deliverables, and cost estimations.
-    </p>
-    <p>
-      The proposal outlines multiple phases of execution including planning, development,
-      testing, and deployment. Each phase has been carefully structured to ensure timely delivery
-      while maintaining high quality standards.
-    </p>
-    <p>
-      Additionally, we have included technical documentation and supporting materials to help your
-      team better understand the architecture and implementation approach.
-    </p>
-    <p>
-      Please review the attachments and let me know if you have any questions or require further clarification.
-      Looking forward to your feedback.
-    </p>
-    <p>Best regards,<br/>Yash</p>
-  `,
-      sentAt: new Date().toISOString(),
-      cc: ["manager@company.com"],
-      bcc: [],
-      attachmentsMeta: [{ filename: "Reminder.pdf", size: 500000 }],
-    },
-  ],
-
-  replies: [
-    {
-      message: "Thanks for sharing, we are reviewing this internally.",
-      timestamp: new Date().toISOString(),
-    },
-  ],
 };
 
 const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
@@ -378,7 +289,7 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
       size: f.size,
       mimeType: f.mimeType,
     }));
-    setAttachments((p) => [...p, ...nf]);
+    setAttachments(nf);
   };
 
   const validateAndAddFiles = (files) => {
@@ -411,7 +322,10 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
     setSending(true);
     try {
       const initialMessage = viewMail.messages?.[0];
-      console.log(viewMail,"-------------------------------------------------")
+      console.log(
+        viewMail,
+        "-------------------------------------------------",
+      );
       const formData = new FormData();
       formData.append("gmailAccountId", accounts?.[0]?.gmailAccountId);
       formData.append("userId", accounts?.[0]?.id);
@@ -420,6 +334,7 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
       formData.append("to", JSON.stringify([viewMail.email]));
       formData.append("cc", JSON.stringify([]));
       formData.append("bcc", JSON.stringify([]));
+
       // formData.append("threadId", viewMail.threadId);
       formData.append("messageId", initialMessage?.id);
 
@@ -447,6 +362,12 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
       setSending(false);
     }
   };
+
+  const hasIncomingReply = viewMail.messages?.some(
+    (m) => m.type === "reply" && m.direction === "incoming",
+  );
+
+  console.log(viewMail, "=================VIEW MAIL=================");
 
   return (
     <div
@@ -477,7 +398,7 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
               <h3 className="text-[15px] font-extrabold text-white truncate">
                 {mode === "thread"
                   ? "Email Thread"
-                  : `Follow-up to ${viewMail.name}`}
+                  : `${hasIncomingReply ? "Reply" : "Follow-up"} to ${viewMail.name}`}
               </h3>
               <p className="text-[12px] text-white/70 truncate">
                 {viewMail.email}
@@ -529,8 +450,10 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
                 <ThreadItem
                   key={idx}
                   item={item}
-                  isReply={item.type === "reply"}
-                  isFollowUp={item.type === "followup"}
+                  isReply={item.direction === "incoming"}
+                  isFollowUp={
+                    item.type === "followup" && item.direction === "outgoing"
+                  }
                   hue={hue}
                 />
               ))
@@ -717,7 +640,7 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
                   }}
                   className="px-[16px] py-[8px] rounded-[10px] text-[13px] font-bold bg-indigo-500 text-white hover:bg-indigo-600 shadow-md transition"
                 >
-                  Send Follow-up →
+                  {hasIncomingReply ? "Reply →" : "Send Follow-up →"}
                 </button>
               </div>
             </>
@@ -754,7 +677,8 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
                     </>
                   ) : (
                     <>
-                      <FiSend size={13} /> Send Follow-up
+                      <FiSend size={13} />{" "}
+                      {hasIncomingReply ? "Reply" : "Send Follow-up"}
                       {attachments.length > 0 && (
                         <span className="ml-[2px] px-[6px] py-[1px] bg-indigo-400 text-white text-[10px] rounded-full">
                           {attachments.length}

@@ -136,7 +136,7 @@ const OutreachTable = ({
                       <div className="flex items-center gap-[6px]">
                         {/* Opens */}
                         <span className="text-[10px] font-semibold px-[7px] py-[3px] rounded-full bg-amber-100 text-amber-700">
-                          📧 {row.openCount || 0}
+                          📧 {row.clicksCount || 0}
                         </span>
 
                         {/* Replies badge */}
