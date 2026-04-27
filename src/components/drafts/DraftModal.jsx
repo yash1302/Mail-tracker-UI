@@ -2,6 +2,8 @@ import { FiX, FiEdit, FiRefreshCw } from "react-icons/fi";
 import AttachmentZone from "./AttachmentZone.jsx";
 import AttachmentList from "./AttachmentList.jsx";
 import { useRef, useEffect } from "react";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 
 const DraftModal = ({
   modalMode,
@@ -27,6 +29,30 @@ const DraftModal = ({
       editorRef.current.innerHTML = body;
     }
   }, [modalMode]);
+
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: body || "",
+    editable: !isView && !isSaving,
+
+    onUpdate: ({ editor }) => {
+      const html = editor.getHTML();
+      setBody(html); // ✅ store HTML
+    },
+
+    editorProps: {
+      attributes: {
+        class:
+          "w-full border border-slate-200 rounded-[9px] px-[12px] py-[9px] text-[13px] min-h-[120px] outline-none",
+      },
+    },
+  });
+
+  useEffect(() => {
+    if (editor && body) {
+      editor.commands.setContent(body);
+    }
+  }, [body, editor]);
   return (
     <div
       className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50"
@@ -132,17 +158,26 @@ const DraftModal = ({
                 }}
               />
             ) : (
-              <>
-                <div
-                  ref={editorRef}
-                  contentEditable
-                  suppressContentEditableWarning={true}
-                  className="w-full border border-slate-200 rounded-[9px] px-[12px] py-[9px] text-[13px] min-h-[120px] outline-none"
-                />
-                <p className="text-right text-[11px] text-slate-300 mt-[4px]">
-                  {body.length} characters
-                </p>
-              </>
+              <div className="border border-slate-200 rounded-[9px] overflow-hidden">
+                {/* Toolbar */}
+                <div className="flex gap-1 p-2 bg-slate-50 border-b border-slate-200">
+                  <button
+                    onClick={() => editor?.chain().focus().toggleBold().run()}
+                    className="px-2 py-1 bg-white rounded hover:bg-indigo-50"
+                  >
+                    B
+                  </button>
+                  <button
+                    onClick={() => editor?.chain().focus().toggleItalic().run()}
+                    className="px-2 py-1 bg-white rounded hover:bg-indigo-50"
+                  >
+                    I
+                  </button>
+                </div>
+
+                {/* Editor */}
+                <EditorContent editor={editor} />
+              </div>
             )}
           </div>
 

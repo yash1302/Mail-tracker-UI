@@ -1,4 +1,10 @@
-import { FiClock } from "react-icons/fi";
+import {
+  FiClock,
+  FiMail,
+  FiMousePointer,
+  FiCornerUpLeft,
+  FiRepeat,
+} from "react-icons/fi";
 import { statusConfig } from "../../utils/statusConfig.jsx";
 // import { FiReply } from "react-icons/fi";
 
@@ -41,7 +47,6 @@ const OutreachTable = ({
   setViewMail,
   isLoading = false,
 }) => {
-
   console.log("Rendering OutreachTable with data:", recentOutreachPreview);
   return (
     <div className="bg-white border-slate-100 shadow-sm flex flex-col h-full">
@@ -135,22 +140,24 @@ const OutreachTable = ({
                     <td className="px-[14px] py-[10px]">
                       <div className="flex items-center gap-[6px]">
                         {/* Opens */}
-                        <span className="text-[10px] font-semibold px-[7px] py-[3px] rounded-full bg-amber-100 text-amber-700">
-                          📧 {row.clicksCount || 0}
+                        <span className="text-[10px] font-semibold px-[7px] py-[3px] rounded-full bg-amber-100 text-amber-700 flex items-center gap-[4px]">
+                          <FiMousePointer size={10} />
+                          {row.clicksCount || 0}
                         </span>
 
                         {/* Replies badge */}
                         {hasReplies && (
                           <span className="text-[10px] font-semibold px-[7px] py-[3px] rounded-full bg-green-100 text-green-700 flex items-center gap-[3px]">
-                            <FiClock size={9} />
+                            <FiCornerUpLeft size={9} />
                             {row.replies || 1}
                           </span>
                         )}
 
                         {/* Follow-ups badge */}
                         {hasFollowUps && (
-                          <span className="text-[10px] font-semibold px-[7px] py-[3px] rounded-full bg-indigo-100 text-indigo-700">
-                            +{row.followUpCount} FU
+                          <span className="text-[10px] font-semibold px-[7px] py-[3px] rounded-full bg-indigo-100 text-indigo-700 flex items-center gap-[4px]">
+                            <FiRepeat size={10} />
+                            {row.followUpCount}
                           </span>
                         )}
                       </div>

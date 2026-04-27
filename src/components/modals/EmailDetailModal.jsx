@@ -21,6 +21,8 @@ import { userContext } from "../../context/userContext.js";
 import { convertToHtml } from "../../utils/fileUtils.js";
 import { toast } from "react-toastify";
 import DraftPicker from "../email/compose email/DraftPicker.jsx";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 
 const statusColors = {
   Replied: "bg-green-100 text-green-700",
@@ -318,19 +320,16 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
   };
 
   const handleSend = async () => {
-    if (!subject.trim() || !message.trim()) return;
+    const html = editor?.getHTML();
+    if (!subject.trim() || !editor?.getText().trim()) return;
     setSending(true);
     try {
       const initialMessage = viewMail.messages?.[0];
-      console.log(
-        viewMail,
-        "-------------------------------------------------",
-      );
       const formData = new FormData();
       formData.append("gmailAccountId", accounts?.[0]?.gmailAccountId);
       formData.append("userId", accounts?.[0]?.id);
       formData.append("subject", subject);
-      formData.append("body", convertToHtml(message));
+      formData.append("body", html);
       formData.append("to", JSON.stringify([viewMail.email]));
       formData.append("cc", JSON.stringify([]));
       formData.append("bcc", JSON.stringify([]));
@@ -350,7 +349,8 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
 
       await sendFollowupApi(formData);
       if (handleGetSentEmails) await handleGetSentEmails();
-      setSentSuccess(true);
+      editor?.commands.clearContent();
+      setMessage("");
       setTimeout(() => {
         setViewMail(null);
         setMode("thread");
@@ -367,7 +367,22 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
     (m) => m.type === "reply" && m.direction === "incoming",
   );
 
-  console.log(viewMail, "=================VIEW MAIL=================");
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: "",
+
+    onUpdate: ({ editor }) => {
+      const html = editor.getHTML();
+      setMessage(html);
+    },
+
+    editorProps: {
+      attributes: {
+        class:
+          "w-full px-[13px] py-[10px] text-[13px] min-h-[140px] outline-none",
+      },
+    },
+  });
 
   return (
     <div
@@ -471,7 +486,10 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
             {showDraftPicker && (
               <DraftPicker
                 setSubject={setSubject}
-                setBody={setMessage}
+                setBody={(html) => {
+                  setMessage(html);
+                  editor?.commands.setContent(html);
+                }}
                 setShowDraftPicker={setShowDraftPicker}
                 addFiles={addDraftFiles}
                 setDraftId={setDraftId}
@@ -503,16 +521,32 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
               <label className="flex items-center gap-[5px] text-[11px] font-bold text-slate-400 uppercase tracking-[0.05em]">
                 <FiAlignLeft size={11} /> Message
               </label>
-              <textarea
-                rows={5}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                disabled={sending}
-                placeholder="Write your follow-up…"
-                className="w-full border border-slate-200 rounded-[10px] px-[13px] py-[10px] text-[13px] resize-none leading-[1.65] text-slate-700 outline-none focus:border-indigo-500 disabled:opacity-50 disabled:bg-slate-50"
-              />
+
+              <div className="border border-slate-200 rounded-[10px] overflow-hidden">
+                {/* Toolbar */}
+                <div className="flex gap-1 p-2 bg-slate-50 border-b border-slate-200">
+                  <button
+                    onClick={() => editor?.chain().focus().toggleBold().run()}
+                    className="px-2 py-1 bg-white rounded hover:bg-indigo-50"
+                  >
+                    B
+                  </button>
+
+                  <button
+                    onClick={() => editor?.chain().focus().toggleItalic().run()}
+                    className="px-2 py-1 bg-white rounded hover:bg-indigo-50"
+                  >
+                    I
+                  </button>
+                </div>
+
+                {/* Editor */}
+                <EditorContent editor={editor} />
+              </div>
+
+              {/* Char count */}
               <p className="text-right text-[11px] text-slate-300">
-                {message.length} chars
+                {editor?.getText().length || 0} chars
               </p>
             </div>
 
@@ -667,7 +701,9 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
               ) : (
                 <button
                   onClick={handleSend}
-                  disabled={!subject.trim() || !message.trim() || sending}
+                  disabled={
+                    !subject.trim() || !editor?.getText().trim() || sending
+                  }
                   className="flex items-center gap-[7px] px-[16px] py-[8px] rounded-[10px] text-[13px] font-bold bg-indigo-500 text-white hover:bg-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed shadow-md transition"
                 >
                   {sending ? (

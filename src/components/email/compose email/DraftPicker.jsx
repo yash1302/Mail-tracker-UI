@@ -5,10 +5,11 @@ import { userContext } from "../../../context/userContext.js";
 
 const DraftPicker = ({
   setSubject,
-  setBody,
+
   setShowDraftPicker,
   addFiles,
   setDraftId,
+  editor,
 }) => {
   const [drafts, setDrafts] = useState([]);
 
@@ -84,7 +85,11 @@ const DraftPicker = ({
             key={i}
             onClick={() => {
               setSubject(d.subject);
-              setBody(d.htmlBody ? htmlToText(d.htmlBody) : d.body);
+
+              if (editor && d.htmlBody) {
+                editor.commands.setContent(d.htmlBody);
+              }
+
               setShowDraftPicker(false);
               addFiles(d.attachments);
               setDraftId(d.id);

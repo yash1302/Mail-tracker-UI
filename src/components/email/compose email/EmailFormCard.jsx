@@ -18,6 +18,8 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { userContext } from "../../../context/userContext.js";
 import { sendEmail } from "../../../utils/api.utils.js";
 import { toast } from "react-toastify";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 
 const EmailFormCard = ({
   setSubject,
@@ -123,13 +125,6 @@ const EmailFormCard = ({
     setAttachments(nf);
   };
 
-  const handleEditorInput = (e) => {
-    const html = e.currentTarget.innerHTML;
-    setEditorContent(html);
-    setBody(html);
-    setContainsLinks(hasLinks(html));
-  };
-
   const handleSend = async () => {
     try {
       const targets = [
@@ -171,6 +166,7 @@ const EmailFormCard = ({
       setDraftId(null);
       setCCRecipients([]);
       setBCCRecipients([]);
+      editor?.commands.clearContent();
 
       toast.success("Email sent successfully!");
     } catch (error) {
@@ -199,6 +195,23 @@ const EmailFormCard = ({
       setContainsLinks(hasLinks(body));
     }
   }, [body, draftId]);
+
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: editorContent,
+    onUpdate: ({ editor }) => {
+      const html = editor.getHTML();
+      setEditorContent(html);
+      setBody(html);
+      setContainsLinks(hasLinks(html));
+    },
+    editorProps: {
+      attributes: {
+        class:
+          "w-full border border-slate-200 rounded-[10px] px-[13px] py-[10px] text-[13px] min-h-[150px] outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200",
+      },
+    },
+  });
 
   return (
     <div className="bg-white rounded-2xl border border-slate-100 overflow-y-scroll h-full shadow-sm">
@@ -237,10 +250,10 @@ const EmailFormCard = ({
       {showDraftPicker && (
         <DraftPicker
           setSubject={setSubject}
-          setBody={setBody}
           setShowDraftPicker={setShowDraftPicker}
           addFiles={addDraftFiles}
           setDraftId={setDraftId}
+          editor={editor}
         />
       )}
 
@@ -314,14 +327,23 @@ const EmailFormCard = ({
             <FiAlignLeft size={11} />
             Message
           </label>
-          <div
-            contentEditable
-            ref={editorRef}
-            suppressContentEditableWarning={true}
-            onInput={handleEditorInput}
-            className="w-full border border-slate-200 rounded-[10px] px-[13px] py-[10px] text-[13px] min-h-[150px] outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200"
-            dangerouslySetInnerHTML={{ __html: editorContent }}
-          />
+          <div className="border border-slate-200 rounded-[10px] overflow-hidden">
+            <div className="flex gap-1 p-2 bg-slate-50 border-b border-slate-200">
+              <button
+                onClick={() => editor?.chain().focus().toggleBold().run()}
+                className="px-2 py-1 bg-white rounded hover:bg-indigo-50"
+              >
+                B
+              </button>
+              <button
+                onClick={() => editor?.chain().focus().toggleItalic().run()}
+                className="px-2 py-1 bg-white rounded hover:bg-indigo-50"
+              >
+                I
+              </button>
+            </div>
+            <EditorContent editor={editor} />
+          </div>
           {!containsLinks && editorContent.trim() && (
             <div className="flex items-start gap-[6px] text-[11px] text-amber-600 bg-amber-50 border border-amber-200 rounded-[8px] px-[10px] py-[8px]">
               <FiLink2 size={12} className="mt-[2px]" />
