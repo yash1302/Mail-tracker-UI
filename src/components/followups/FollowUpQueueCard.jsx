@@ -3,7 +3,6 @@ import { FiClock } from "react-icons/fi";
 const FollowUpQueueCard = ({ counts, FOLLOWUP_THRESHOLD_DAYS }) => {
   const stats = [
     { label: "Pending", val: counts?.Pending, color: "text-yellow-200" },
-    { label: "Sent", val: counts?.Sent, color: "text-emerald-200" },
     { label: "Snoozed", val: counts?.Snoozed, color: "text-sky-200" },
   ];
 

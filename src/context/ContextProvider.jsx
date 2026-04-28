@@ -35,12 +35,8 @@ const ContextProvider = ({ children }) => {
         try {
           const decoded = jwtDecode(token);
 
-          console.log("Decoded:", decoded);
-
           // 👇 depends on what you stored in backend
           const username = decoded.name || decoded.email;
-
-          console.log("Username:", username);
 
           setUserName(username);
 

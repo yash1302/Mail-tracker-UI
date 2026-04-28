@@ -12,7 +12,6 @@ const UserProfile = () => {
     navigate("/");
   };
 
-  console.log(userName,"username in user profile")
   return (
     <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition">
       <div className="w-8 h-8 rounded-full bg-linear-to-br from-indigo-500 to-purple-400 flex items-center justify-center text-xs font-bold text-white">

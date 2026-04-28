@@ -70,7 +70,6 @@ const EmailFormCard = ({
         addRecipient(recipientInput);
       }
     }
-    console.log("Recipient input key:", e.key, recipientInput);
     if (e.key === "Tab") {
       if (isValidEmail(recipientInput)) {
         addRecipient(recipientInput);

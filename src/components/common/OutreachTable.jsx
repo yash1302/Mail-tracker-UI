@@ -47,7 +47,6 @@ const OutreachTable = ({
   setViewMail,
   isLoading = false,
 }) => {
-  console.log("Rendering OutreachTable with data:", recentOutreachPreview);
   return (
     <div className="bg-white border-slate-100 shadow-sm flex flex-col h-full">
       <div className="flex-1 overflow-y-auto">

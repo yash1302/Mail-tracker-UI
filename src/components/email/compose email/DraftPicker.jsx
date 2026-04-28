@@ -31,7 +31,6 @@ const DraftPicker = ({
         htmlBody: d.htmlBody,
       }));
 
-      console.log("Fetched drafts:", formatted);
       setDrafts(formatted);
     } catch (err) {
       console.error("Fetch drafts error:", err);

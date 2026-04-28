@@ -4,7 +4,6 @@ import AnalyticsCards from "../components/dashboard/AnalyticsCards.jsx";
 import FollowupQueue from "../components/dashboard/FollowupQueue.jsx";
 import OutreachTable from "../components/common/OutreachTable.jsx";
 import EmailDetailModal from "../components/modals/EmailDetailModal.jsx";
-import FollowupModal from "../components/modals/FollowupModal.jsx";
 import {
   getSentEmails,
   getDashboardKPI,
@@ -18,10 +17,10 @@ const Dashboard = () => {
   const { accounts } = useContext(userContext);
 
   const [viewMail, setViewMail] = useState(null);
-  const [followupLead, setFollowupLead] = useState(null);
   const [emails, setEmails] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [followupRefreshKey, setFollowupRefreshKey] = useState(0);
   const [kpi, setKpi] = useState({
     totalSent: 0,
     totalReplied: 0,
@@ -34,6 +33,11 @@ const Dashboard = () => {
     followupNeeded: 0,
     totalDrafts: 0,
   });
+  const [forceCompose, setForceCompose] = useState(false);
+
+  const refreshFollowups = () => {
+    setFollowupRefreshKey((prev) => prev + 1);
+  };
 
   const handleGetKpi = useCallback(async () => {
     if (!accounts?.length) return;
@@ -92,32 +96,38 @@ const Dashboard = () => {
     if (accounts?.length) refreshAll();
   }, [accounts, refreshAll]);
 
-
   const formattedEmails = emails.slice(0, 10).map((thread) => {
     const messages = thread.messages || [];
     const lastMessage = messages[messages.length - 1] || {};
 
-    const email = (lastMessage.to || [])[0] || "";
+    const email =
+      lastMessage.direction === "incoming"
+        ? lastMessage.from
+        : (lastMessage.to || [])[0] || "";
 
     const name = email
       .split("@")[0]
       .replace(/[._]/g, " ")
       .replace(/\b\w/g, (c) => c.toUpperCase());
-    console.log("Formatting thread:", thread);
+
     return {
       threadId: thread.threadId,
       name,
       email,
       preview: lastMessage.preview || "",
       subject: lastMessage.subject || "",
-      status: lastMessage.isReplied ? "Replied" : "Sent",
+      status: messages.some((m) => m.type === "reply")
+        ? "Replied"
+        : lastMessage.direction === "incoming"
+          ? "Received"
+          : "Sent",
       date: new Date(thread.lastActivityAt).toLocaleDateString(),
       openCount: lastMessage.opensCount || 0,
       clicksCount: thread.totalClicks || 0,
       messages: messages,
       followUpCount: messages.filter((m) => m.type === "followup").length,
-      replies: messages.filter((m) => m.type === "reply").length,
-      isReplied: messages.some((m) => m.type === "reply"),
+      replies: messages.filter((m) => m.direction === "incoming").length,
+      isReplied: messages.some((m) => m.direction === "incoming"),
     };
   });
 
@@ -131,7 +141,13 @@ const Dashboard = () => {
       />
 
       <div className="grid grid-cols-[280px_1fr] gap-3 flex-1 min-h-0">
-        <FollowupQueue openFollowupModal={setFollowupLead} />
+        <FollowupQueue
+          refreshKey={followupRefreshKey}
+          openFollowupModal={(lead) => {
+            setViewMail(lead); // open email modal
+            setForceCompose(true); // force compose mode
+          }}
+        />
 
         <div className="bg-white rounded-[14px] border border-slate-100 shadow-sm flex flex-col overflow-hidden">
           <div className="flex items-center justify-between px-[18px] py-[14px] border-b border-slate-100 shrink-0">
@@ -156,18 +172,13 @@ const Dashboard = () => {
       {viewMail && (
         <EmailDetailModal
           viewMail={viewMail}
-          setViewMail={setViewMail}
-          handleGetSentEmails={refreshAll}
-        />
-      )}
-
-      {followupLead && (
-        <FollowupModal
-          lead={followupLead}
-          onClose={() => {
-            setFollowupLead(null);
-            refreshAll();
+          setViewMail={(val) => {
+            setViewMail(val);
+            if (!val) setForceCompose(false); // reset when closed
           }}
+          handleGetSentEmails={refreshAll}
+          forceCompose={forceCompose}
+          onFollowupSent={refreshFollowups}
         />
       )}
     </div>

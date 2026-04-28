@@ -171,15 +171,26 @@ const ThreadItem = ({ item, hue }) => {
         </div>
 
         {/* Badge */}
-        {!isIncoming && (
+        {/* Badge */}
+        {!isIncoming ? (
           <span
             className={`text-[10px] px-[8px] py-[2px] rounded-full font-semibold ${
               isFollowUp
                 ? "bg-indigo-100 text-indigo-600"
-                : "bg-slate-100 text-slate-600"
+                : item.type === "initial"
+                  ? "bg-slate-100 text-slate-600"
+                  : "bg-gray-100 text-gray-600"
             }`}
           >
-            {isFollowUp ? "Follow-up" : "Original"}
+            {isFollowUp
+              ? "Follow-up"
+              : item.type === "initial"
+                ? "Original"
+                : "Sent"}
+          </span>
+        ) : (
+          <span className="text-[10px] px-[8px] py-[2px] rounded-full font-semibold bg-green-100 text-green-600">
+            Reply
           </span>
         )}
       </div>
@@ -259,8 +270,15 @@ const ThreadItem = ({ item, hue }) => {
   );
 };
 
-const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
-  const [mode, setMode] = useState("thread");
+const EmailDetailModal = ({
+  viewMail,
+  setViewMail,
+  handleGetSentEmails,
+  forceCompose = false,
+  onFollowupSent,
+}) => {
+  console.log(viewMail, "viewMail in modal");
+  const [mode, setMode] = useState(forceCompose ? "compose" : "thread");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [attachments, setAttachments] = useState([]);
@@ -349,6 +367,7 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
 
       await sendFollowupApi(formData);
       if (handleGetSentEmails) await handleGetSentEmails();
+      if (forceCompose) onFollowupSent?.();
       editor?.commands.clearContent();
       setMessage("");
       setTimeout(() => {
@@ -399,6 +418,7 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
             {mode === "compose" && (
               <button
                 onClick={() => {
+                  if (forceCompose) return setViewMail(null); // close instead
                   setMode("thread");
                   setSubject("");
                   setMessage("");
@@ -411,9 +431,11 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
             )}
             <div className="min-w-0 flex-1">
               <h3 className="text-[15px] font-extrabold text-white truncate">
-                {mode === "thread"
-                  ? "Email Thread"
-                  : `${hasIncomingReply ? "Reply" : "Follow-up"} to ${viewMail.name}`}
+                {forceCompose
+                  ? `Follow-up to ${viewMail.name}`
+                  : mode === "thread"
+                    ? "Email Thread"
+                    : `${hasIncomingReply ? "Reply" : "Follow-up"} to ${viewMail.name}`}
               </h3>
               <p className="text-[12px] text-white/70 truncate">
                 {viewMail.email}
@@ -458,7 +480,7 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
         </div>
 
         {/* ── THREAD VIEW ── */}
-        {mode === "thread" && (
+        {!forceCompose && mode === "thread" && (
           <div className="flex-1 overflow-y-auto px-[22px] py-[16px] space-y-[12px]">
             {threadItems.length > 0 ? (
               threadItems.map((item, idx) => (
@@ -486,13 +508,10 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
             {showDraftPicker && (
               <DraftPicker
                 setSubject={setSubject}
-                setBody={(html) => {
-                  setMessage(html);
-                  editor?.commands.setContent(html);
-                }}
                 setShowDraftPicker={setShowDraftPicker}
                 addFiles={addDraftFiles}
                 setDraftId={setDraftId}
+                editor={editor}
               />
             )}
 
@@ -654,7 +673,7 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
 
         {/* ── FOOTER ── */}
         <div className="px-[22px] py-[14px] border-t border-slate-100 flex items-center justify-between bg-slate-50 flex-shrink-0">
-          {mode === "thread" ? (
+          {!forceCompose && mode === "thread" ? (
             <>
               <div className="text-[11.5px] text-slate-500">
                 {threadItems.length} message

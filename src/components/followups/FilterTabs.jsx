@@ -1,5 +1,5 @@
 const FilterTabs = ({ filter, setFilter, counts }) => {
-  const tabs = ["Pending", "Sent", "Snoozed", "All"];
+  const tabs = ["Pending", "Snoozed", "All"];
 
   return (
     <div className="flex gap-[2px] bg-slate-50 rounded-lg p-[3px]">

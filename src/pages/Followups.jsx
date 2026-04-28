@@ -11,10 +11,14 @@ const Followups = () => {
   const [isLoadingQueue, setIsLoadingQueue] = useState(false);
   const { accounts } = useContext(userContext);
 
+  // ✅ FIXED COUNTS
   const counts = {
     Pending: queue.filter((x) => x.status === "Pending").length,
-    Sent: queue.filter((x) => x.status === "Sent").length,
-    Snoozed: queue.filter((x) => x.status === "Snoozed").length,
+
+    Snoozed: queue.filter((x) => x.status === "Stopped").length,
+
+    Completed: queue.filter((x) => x.status === "Completed").length,
+
     All: queue.length,
   };
 
@@ -25,13 +29,15 @@ const Followups = () => {
         accounts[0]?.id,
         accounts[0]?.gmailAccountId,
       );
-      setQueue(data?.data?.data);
+      setQueue(data?.data?.data || []);
     } catch (_error) {
       console.error("Error fetching follow-ups:", _error);
     } finally {
       setIsLoadingQueue(false);
     }
   }, [accounts]);
+
+  console.log(queue, "followup queue");
 
   useEffect(() => {
     if (accounts.length > 0) {

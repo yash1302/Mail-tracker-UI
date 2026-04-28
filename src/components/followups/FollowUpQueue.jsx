@@ -2,10 +2,10 @@ import { FiSearch, FiCheck, FiRefreshCw } from "react-icons/fi";
 import FilterTabs from "./FilterTabs.jsx";
 import FollowUpRow from "./FollowUpRow.jsx";
 import { useContext, useState } from "react";
-import FollowupModal from "../modals/FollowupModal.jsx";
 import { toast } from "react-toastify";
 import { checkRepliesApi } from "../../utils/api.utils.js";
 import { userContext } from "../../context/userContext.js";
+import EmailDetailModal from "../modals/EmailDetailModal.jsx";
 
 const SkeletonRow = () => (
   <div className="flex items-center gap-4 px-5 py-4 border-b border-slate-100 animate-pulse">
@@ -28,20 +28,57 @@ const FollowUpQueue = ({
 }) => {
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
-  const [activeModal, setActiveModal] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { accounts } = useContext(userContext);
+  const [viewMail, setViewMail] = useState(null);
+  const [forceCompose, setForceCompose] = useState(false);
 
-  const openCompose = (row) => setActiveModal(row);
+  const openCompose = (row) => {
+    setViewMail({
+      threadId: row.threadId,
+      subject: row.subject,
+      email: row.to?.[0] || row.email,
+      name:
+        row.name ??
+        (row.to?.[0] || row.email || "")
+          .split("@")[0]
+          .replace(/[._]/g, " ")
+          .replace(/\b\w/g, (c) => c.toUpperCase()),
+
+      messages: [
+        {
+          id: row.messageId,
+          type: "initial",
+          direction: "outgoing",
+          subject: row.subject,
+          htmlBody: row.htmlBody || "",
+          sentAt: row.sentAt || new Date(),
+        },
+      ],
+
+      status: "Pending", // ✅ FIXED
+    });
+
+    setForceCompose(true);
+  };
 
   const visible = queue.filter((x) => {
-    const matchF = filter === "All" || x.status === filter;
+    const matchF =
+      filter === "All" ||
+      (filter === "Pending" && x.status === "Pending") ||
+      (filter === "Snoozed" &&
+        x.status === "Stopped") ||
+      (filter === "Completed" && x.status === "Completed");
+
     const q = search.toLowerCase();
+
+    const email = x.to?.[0] || x.email || "";
+    const subject = x.subject || "";
+
     return (
       matchF &&
-      (x.to[0].toLowerCase().includes(q) ||
-        x.email[0].toLowerCase().includes(q) ||
-        x.subject[0].toLowerCase().includes(q))
+      (email.toLowerCase().includes(q) ||
+        subject.toLowerCase().includes(q))
     );
   });
 
@@ -56,7 +93,7 @@ const FollowUpQueue = ({
       await handlegetFollowUpsApi();
     } catch (_error) {
       console.error(_error);
-      toast.error("Failed to refresh replies. Please try again.");
+      toast.error("Failed to refresh replies.");
     } finally {
       setIsRefreshing(false);
     }
@@ -71,11 +108,12 @@ const FollowUpQueue = ({
       {/* Toolbar */}
       <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 gap-3">
         <FilterTabs filter={filter} setFilter={setFilter} counts={counts} />
+
         <div className="flex items-center gap-2">
           <button
             onClick={handleRefreshReplies}
             disabled={isRefreshing || isLoadingQueue}
-            className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-md border border-indigo-200 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+            className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-md border border-indigo-200 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 disabled:opacity-50"
           >
             <FiRefreshCw
               size={12}
@@ -98,7 +136,7 @@ const FollowUpQueue = ({
         </div>
       </div>
 
-      {/* Skeleton loader — initial queue fetch */}
+      {/* Skeleton */}
       {showSkeleton && (
         <div className="flex flex-col">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -107,7 +145,7 @@ const FollowUpQueue = ({
         </div>
       )}
 
-      {/* Empty state */}
+      {/* Empty */}
       {showEmpty && (
         <div className="py-14 flex flex-col items-center gap-2 text-center">
           <div className="w-13 h-13 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
@@ -115,24 +153,18 @@ const FollowUpQueue = ({
           </div>
           <p className="text-sm font-semibold text-slate-400">All clear!</p>
           <p className="text-[13px] text-slate-300">
-            No follow-ups in this filter. Send more emails to build your queue.
+            No follow-ups in this filter.
           </p>
         </div>
       )}
 
-      {/* Refresh overlay — subtle dimming over the list while re-checking */}
+      {/* List */}
       {showList && (
         <div
-          className={`flex flex-col relative transition-opacity duration-200 ${isRefreshing ? "opacity-50 pointer-events-none" : "opacity-100"}`}
+          className={`flex flex-col relative ${
+            isRefreshing ? "opacity-50 pointer-events-none" : ""
+          }`}
         >
-          {isRefreshing && (
-            <div className="absolute inset-0 flex items-center justify-center z-10">
-              <div className="flex items-center gap-2 bg-white border border-indigo-100 shadow-md rounded-full px-4 py-2 text-xs font-semibold text-indigo-600">
-                <FiRefreshCw size={12} className="animate-spin" />
-                Checking for replies…
-              </div>
-            </div>
-          )}
           {visible.map((row, i) => (
             <FollowUpRow
               key={i}
@@ -140,16 +172,22 @@ const FollowUpQueue = ({
               index={i}
               length={visible.length}
               openCompose={openCompose}
-              setQueue={setQueue} // ← only these two action props needed now
+              setQueue={setQueue}
             />
           ))}
         </div>
       )}
 
-      {activeModal && (
-        <FollowupModal
-          lead={activeModal}
-          onClose={() => setActiveModal(null)}
+      {/* Modal */}
+      {viewMail && (
+        <EmailDetailModal
+          viewMail={viewMail}
+          setViewMail={(val) => {
+            setViewMail(val);
+            if (!val) setForceCompose(false);
+          }}
+          forceCompose={forceCompose}
+          onFollowupSent={handlegetFollowUpsApi}
         />
       )}
     </div>

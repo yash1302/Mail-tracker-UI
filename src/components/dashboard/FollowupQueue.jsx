@@ -16,7 +16,7 @@ const SkeletonRow = () => (
   </div>
 );
 
-const FollowupQueue = ({ openFollowupModal }) => {
+const FollowupQueue = ({ openFollowupModal,refreshKey  }) => {
   const navigate = useNavigate();
   const { accounts } = useContext(userContext);
   const [leads, setLeads] = useState([]);
@@ -32,7 +32,10 @@ const FollowupQueue = ({ openFollowupModal }) => {
       );
       const all = data?.data?.data || [];
       // only show non-replied, max 5
-      const filtered = all.filter((m) => m.status !== "Replied").slice(0, 5);
+      console.log(all, "all followups");
+      const filtered = all
+        .filter((m) => m.status !== "Replied" && !m.isReplied)
+        .slice(0, 5);
       setLeads(filtered);
     } catch (error) {
       console.error("Error fetching follow-ups:", error);
@@ -46,7 +49,7 @@ const FollowupQueue = ({ openFollowupModal }) => {
       await fetchFollowUps();
     };
     init();
-  }, [fetchFollowUps]);
+  }, [fetchFollowUps,refreshKey]);
 
   return (
     <div className="bg-white rounded-[14px] border border-slate-100 shadow-sm flex flex-col overflow-hidden">
@@ -109,7 +112,33 @@ const FollowupQueue = ({ openFollowupModal }) => {
 
               {/* Button */}
               <button
-                onClick={() => openFollowupModal(lead)}
+                onClick={() =>
+                  openFollowupModal({
+                    threadId: lead.threadId,
+                    subject: lead.subject,
+                    email: lead.to?.[0] || lead.email,
+                    name:
+                      lead.name ??
+                      (lead.to?.[0] || lead.email || "")
+                        .split("@")[0]
+                        .replace(/[._]/g, " ")
+                        .replace(/\b\w/g, (c) => c.toUpperCase()),
+
+                    // IMPORTANT: minimal messages array for EmailDetailModal
+                    messages: [
+                      {
+                        id: lead.messageId,
+                        type: "initial",
+                        direction: "outgoing",
+                        subject: lead.subject,
+                        htmlBody: lead.body || "",
+                        sentAt: lead.sentAt || new Date(),
+                      },
+                    ],
+
+                    status: "Sent",
+                  })
+                }
                 className="w-full text-[11px] font-bold rounded-md py-[5px] border border-indigo-200 bg-indigo-50 text-indigo-600 transition hover:bg-indigo-600 hover:text-white"
               >
                 Send Followup →
