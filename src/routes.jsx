@@ -11,6 +11,8 @@ import HomeRedirect from "./utils/HomeRedirect.jsx";
 import PublicRoute from "./utils/PublicRoute.jsx";
 import ProtectedRoute from "./utils/ProtectedRoute.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
+import PrivacyPolicy from "./pages/PrivacyPolicyPage.jsx";
+import TermsOfService from "./pages/TermsOfServicePage.jsx";
 
 export const router = createBrowserRouter([
   {
@@ -40,6 +42,22 @@ export const router = createBrowserRouter([
     element: (
       <PublicRoute>
         <Signup />
+      </PublicRoute>
+    ),
+  },
+  {
+    path: "/privacy",
+    element: (
+      <PublicRoute>
+        <PrivacyPolicy />
+      </PublicRoute>
+    ),
+  },
+  {
+    path: "/termsOfService",
+    element: (
+      <PublicRoute>
+        <TermsOfService />
       </PublicRoute>
     ),
   },
