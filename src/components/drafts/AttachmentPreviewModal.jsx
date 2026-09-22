@@ -2,7 +2,6 @@ import { FiX, FiDownload } from "react-icons/fi";
 
 const AttachmentPreviewModal = ({ file, onClose }) => {
   if (!file) return null;
-
   const name = file.filename || file.name;
   const type = file.type || "";
 
@@ -28,10 +27,7 @@ const AttachmentPreviewModal = ({ file, onClose }) => {
     }
 
     // PDFs
-    if (
-      type === "application/pdf" ||
-      name.toLowerCase().endsWith(".pdf")
-    ) {
+    if (type === "application/pdf" || name.toLowerCase().endsWith(".pdf")) {
       return (
         <iframe
           src={file.url}
@@ -72,8 +68,7 @@ const AttachmentPreviewModal = ({ file, onClose }) => {
           <h3 className="font-semibold truncate">{name}</h3>
 
           <div className="flex items-center gap-2">
-
-            <button 
+            <button
               onClick={onClose}
               className="p-2 rounded hover:bg-slate-100"
             >

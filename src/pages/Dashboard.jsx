@@ -103,10 +103,11 @@ const Dashboard = () => {
     const messages = thread.messages || [];
     const lastMessage = messages[messages.length - 1] || {};
 
-    const email =
-      lastMessage.direction === "incoming"
-        ? lastMessage.from
-        : (lastMessage.to || [])[0] || "";
+    const initialMessage = messages.find(
+      (msg) => msg.direction === "outgoing" && msg.type === "initial",
+    );
+
+    const email = (initialMessage?.to || [])[0] || "";
 
     const name = email
       .split("@")[0]

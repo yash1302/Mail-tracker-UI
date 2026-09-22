@@ -7,9 +7,11 @@ const OAuthSuccess = () => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
+    const refreshToken = params.get("refreshToken");
 
     if (token) {
       localStorage.setItem("token", token);
+      localStorage.setItem("refreshToken", refreshToken);
       navigate("/dashboard");
     } else {
       navigate("/login");

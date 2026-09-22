@@ -479,7 +479,11 @@ const EmailDetailModal = ({
         throw new Error(result.message || "Failed to generate AI reply");
       }
 
-      // Set AI HTML directly into TipTap
+      if (result.data.subject) {
+        setSubject(result.data.subject);
+      }
+
+      // Set body returned by AI
       editor?.commands.setContent(result.data.reply);
 
       toast.success("AI reply generated!");
