@@ -168,7 +168,7 @@ export const demoApi = {
       title,
       subject,
       htmlBody: body,
-      bodyPreview: String(body).replace(/<[^>]*>/g, "").slice(0, 120),
+      bodyPreview: subject || "Demo draft message",
       attachments: [],
     });
     return { success: true };
@@ -186,9 +186,7 @@ export const demoApi = {
             title: formData.get("title") || draft.title,
             subject: formData.get("subject") || draft.subject,
             htmlBody: formData.get("body") || draft.htmlBody,
-            bodyPreview: String(formData.get("body") || draft.htmlBody)
-              .replace(/<[^>]*>/g, "")
-              .slice(0, 120),
+            bodyPreview: formData.get("subject") || draft.subject,
           }
         : draft,
     );
@@ -260,7 +258,7 @@ export const demoApi = {
         direction: "outgoing",
         to: [toEmail],
         subject,
-        preview: String(body).replace(/<[^>]*>/g, "").slice(0, 120),
+        preview: subject,
         htmlBody: body,
         sentAt: nowIso(),
         opensCount: 0,
