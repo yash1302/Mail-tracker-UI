@@ -2,12 +2,13 @@ import { useContext } from "react";
 import { FiLogOut } from "react-icons/fi";
 import { userContext } from "../../context/userContext.js";
 import { useNavigate } from "react-router-dom";
+import { clearSessionAuth } from "../../utils/auth.js";
 
 const UserProfile = () => {
-  const { accounts,userName } = useContext(userContext);
+  const { userName } = useContext(userContext);
   const navigate = useNavigate();
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    clearSessionAuth();
     window.location.reload();
     navigate("/");
   };

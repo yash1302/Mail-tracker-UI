@@ -17,6 +17,7 @@ import AttachmentUpload from "./AttachmentUpload.jsx";
 import { useContext, useEffect, useRef, useState } from "react";
 import { userContext } from "../../../context/userContext.js";
 import { sendEmail } from "../../../utils/api.utils.js";
+import { isDemoMode } from "../../../utils/auth.js";
 import { toast } from "react-toastify";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -48,6 +49,7 @@ const EmailFormCard = ({
   const [editorContent, setEditorContent] = useState("");
 
   const { accounts } = useContext(userContext);
+  const demoMode = isDemoMode();
 
   const hasLinks = (text) => {
     return /(https?:\/\/|<a\s+href=)/i.test(text);
@@ -153,6 +155,13 @@ const EmailFormCard = ({
   };
 
   const handleSend = async () => {
+    if (demoMode) {
+      toast.info(
+        "Demo mode: real sending is disabled. Sign in with Gmail to send real emails.",
+      );
+      return;
+    }
+
     try {
       const targets = [
         ...recipients,
@@ -429,11 +438,20 @@ const EmailFormCard = ({
             ) : (
               <>
                 <FiSend size={13} />
-                {allTo.length > 1 ? `Send to ${allTo.length}` : "Send Email"}
+                {demoMode
+                  ? "Sign in with Gmail to Send"
+                  : allTo.length > 1
+                    ? `Send to ${allTo.length}`
+                    : "Send Email"}
               </>
             )}
           </button>
         </div>
+        {demoMode && (
+          <p className="text-[11px] text-amber-600 bg-amber-50 border border-amber-200 rounded-[8px] px-[10px] py-[8px]">
+            Demo mode uses mock data. Real email sending requires Gmail sign-in.
+          </p>
+        )}
       </div>
     </div>
   );

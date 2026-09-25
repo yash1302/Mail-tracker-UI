@@ -1,5 +1,6 @@
 import { useContext } from "react";
 import { userContext } from "../context/userContext.js";
+import { isDemoMode } from "../utils/auth.js";
 
 const pageTitles = {
   dashboard: {
@@ -30,6 +31,7 @@ const pageTitles = {
 
 const Navbar = () => {
   const { active } = useContext(userContext);
+  const demoMode = isDemoMode();
 
   const info = pageTitles[active] || pageTitles.dashboard;
 
@@ -41,6 +43,11 @@ const Navbar = () => {
           <h1 className="text-[15px] font-bold text-slate-900 tracking-tight whitespace-nowrap">
             {info.title}
           </h1>
+          {demoMode && (
+            <span className="text-[10px] font-bold uppercase tracking-[0.06em] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+              Demo Mode
+            </span>
+          )}
 
           <span className="text-xs text-slate-400 font-normal truncate">
             {info.sub}
