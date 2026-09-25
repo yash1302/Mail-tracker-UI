@@ -1,5 +1,7 @@
 import { apiConfig } from "./api.config.js";
 import axiosclient from "./axios-client.js";
+import { isDemoMode } from "./auth.js";
+import { demoApi } from "../data/demoApi.js";
 const {
   USER_SINGUP,
   USER_LOGIN,
@@ -34,6 +36,9 @@ export const loginUser = async (userData) => {
   }
 };
 export const getGmailAccounts = async () => {
+  if (isDemoMode()) {
+    return demoApi.getGmailAccounts();
+  }
   try {
     const response = await axiosclient.get(GMAIL_ACCOUNT);
     return response.data;
@@ -43,6 +48,9 @@ export const getGmailAccounts = async () => {
 };
 
 export const deleteGmailAccount = async (gmailAccountId) => {
+  if (isDemoMode()) {
+    return demoApi.deleteGmailAccount(gmailAccountId);
+  }
   try {
     const response = await axiosclient.delete(GMAIL_ACCOUNT, {
       data: { gmailAccountId },
@@ -54,6 +62,9 @@ export const deleteGmailAccount = async (gmailAccountId) => {
 };
 
 export const sendEmail = async (emailData) => {
+  if (isDemoMode()) {
+    return demoApi.sendEmail(emailData);
+  }
   try {
     const response = await axiosclient.post(SEND_MAIL, emailData, {
       headers: {
@@ -67,6 +78,9 @@ export const sendEmail = async (emailData) => {
 };
 
 export const getSentEmails = async (gmailAccountId, userId) => {
+  if (isDemoMode()) {
+    return demoApi.getSentEmails(gmailAccountId, userId);
+  }
   try {
     const response = await axiosclient.get(GET_SENT_EMAILS, {
       params: {
@@ -114,6 +128,9 @@ export const downloadAttachment = async ({
 };
 
 export const createDraftApi = async (formData) => {
+  if (isDemoMode()) {
+    return demoApi.createDraft(formData);
+  }
   try {
     const response = await axiosclient.post(DRAFTS, formData, {
       headers: {
@@ -127,6 +144,9 @@ export const createDraftApi = async (formData) => {
 };
 
 export const getDraftsApi = async ({ userId, gmailAccountId }) => {
+  if (isDemoMode()) {
+    return demoApi.getDrafts(userId, gmailAccountId);
+  }
   try {
     const response = await axiosclient.get(DRAFTS, {
       params: {
@@ -142,6 +162,9 @@ export const getDraftsApi = async ({ userId, gmailAccountId }) => {
 };
 
 export const updateDraftApi = async (draftId, formData) => {
+  if (isDemoMode()) {
+    return demoApi.updateDraft(draftId, formData);
+  }
   try {
     const response = await axiosclient.put(DRAFTS, formData, {
       params: { id: draftId },
@@ -157,6 +180,9 @@ export const updateDraftApi = async (draftId, formData) => {
 };
 
 export const getFollowUpsApi = async (userId, gmailAccountId) => {
+  if (isDemoMode()) {
+    return demoApi.getFollowups(userId, gmailAccountId);
+  }
   try {
     const response = await axiosclient.get(GET_FOLLOWUPS, {
       params: { userId, gmailAccountId },
@@ -168,6 +194,9 @@ export const getFollowUpsApi = async (userId, gmailAccountId) => {
 };
 
 export const checkRepliesApi = async (body) => {
+  if (isDemoMode()) {
+    return demoApi.checkReplies(body);
+  }
   try {
     const response = await axiosclient.post(CHECK_REPLIES, body);
     return response.data;
@@ -177,6 +206,9 @@ export const checkRepliesApi = async (body) => {
 };
 
 export const deleteDraftApi = async (draftId) => {
+  if (isDemoMode()) {
+    return demoApi.deleteDraft(draftId);
+  }
   try {
     const response = await axiosclient.delete(DELETE_DRAFT, {
       params: { id: draftId },
@@ -188,6 +220,9 @@ export const deleteDraftApi = async (draftId) => {
 };
 
 export const getDashboardKPI = async (userId, gmailAccountId, analyticsFilter) => {
+  if (isDemoMode()) {
+    return demoApi.getDashboardKpi(userId, gmailAccountId, analyticsFilter);
+  }
   try {
     const response = await axiosclient.get(apiConfig.DASHBOARD_KPI, {
       params: { userId, gmailAccountId, filter: analyticsFilter },
@@ -199,6 +234,9 @@ export const getDashboardKPI = async (userId, gmailAccountId, analyticsFilter) =
 };
 
 export const updateFollowUpStatusApi = async (followUpId, action) => {
+  if (isDemoMode()) {
+    return demoApi.updateFollowupStatus(followUpId, action);
+  }
   try {
     const response = await axiosclient.patch(
       `/api/followup/${followUpId}/status`,
@@ -211,6 +249,9 @@ export const updateFollowUpStatusApi = async (followUpId, action) => {
 };
 
 export const sendFollowupApi = async (emailData) => {
+  if (isDemoMode()) {
+    return demoApi.sendFollowup(emailData);
+  }
   try {
     const response = await axiosclient.post(SEND_FOLLOWUP, emailData, {
       headers: {
@@ -242,6 +283,9 @@ export const verifyOTPApi = async (email, otp) => {
 };
 
 export const generateAIReplyApi = async (emailData) => {
+  if (isDemoMode()) {
+    return demoApi.generateAiReply(emailData);
+  }
   try {
     const response = await axiosclient.post(
       apiConfig.GENERATE_AI_REPLY,

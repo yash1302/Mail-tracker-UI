@@ -429,6 +429,7 @@ const EmailDetailModal = ({
       await sendFollowupApi(formData);
       if (handleGetSentEmails) await handleGetSentEmails();
       if (forceCompose) onFollowupSent?.();
+      setSentSuccess(true);
       editor?.commands.clearContent();
       setMessage("");
       setTimeout(() => {

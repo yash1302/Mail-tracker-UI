@@ -13,10 +13,13 @@ import {
   FiUserCheck,
   FiCheck,
   FiX,
+  FiPlayCircle,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { enableDemoMode } from "../utils/auth.js";
 
 const LandingPage = () => {
+  const navigate = useNavigate();
   const features = [
     {
       icon: <FiSend size={20} />,
@@ -58,6 +61,11 @@ const LandingPage = () => {
 
   const handleGoogleAuth = () => {
     window.location.href = `${import.meta.env.VITE_BACKEND_URL}api/auth/googleSignin`;
+  };
+
+  const handleDemoMode = () => {
+    enableDemoMode();
+    navigate("/dashboard");
   };
 
   return (
@@ -170,6 +178,10 @@ const LandingPage = () => {
           </span>
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <button onClick={handleDemoMode} className="google-btn-navbar">
+            <FiPlayCircle size={15} />
+            Try Demo
+          </button>
           <button onClick={handleGoogleAuth} className="google-btn-navbar">
             <FcGoogle size={16} />
             Sign in
@@ -267,6 +279,10 @@ const LandingPage = () => {
             flexWrap: "wrap",
           }}
         >
+          <button onClick={handleDemoMode} className="google-btn">
+            <FiPlayCircle size={18} />
+            Try Public Demo
+          </button>
           <button onClick={handleGoogleAuth} className="google-btn">
             <FcGoogle size={20} />
             Continue with Google

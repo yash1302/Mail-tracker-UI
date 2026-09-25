@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getGmailAccounts } from "../utils/api.utils.js";
 import { userContext } from "./userContext.js";
 import { jwtDecode } from "jwt-decode";
+import { isDemoMode } from "../utils/auth.js";
 
 const ContextProvider = ({ children }) => {
   const [screen, setScreen] = useState("landing");
@@ -29,6 +30,12 @@ const ContextProvider = ({ children }) => {
 
   useEffect(() => {
     const init = async () => {
+      if (isDemoMode()) {
+        setUserName("Demo User");
+        await fetchAccounts();
+        return;
+      }
+
       const token = localStorage.getItem("token");
 
       if (token) {
