@@ -91,7 +91,7 @@ const ThreadItem = ({ item, hue }) => {
   const isOutgoing = item.direction === "outgoing";
   const isFollowUp = item.type === "followup" && isOutgoing;
 
-  const { accounts } = useContext(userContext);
+  const { accounts, demoMode } = useContext(userContext);
 
   const cleanHtml = (html = "") => {
     const parser = new DOMParser();
@@ -141,6 +141,10 @@ const ThreadItem = ({ item, hue }) => {
   };
 
   const downloadFile = async (file) => {
+    if (demoMode) {
+      toast.info("Demo mode — file download is simulated.");
+      return;
+    }
     const response = await fetch(file.url);
 
     const blob = await response.blob();
@@ -351,6 +355,7 @@ const EmailDetailModal = ({
   const fileRef = useRef(null);
   const { accounts } = useContext(userContext);
   const [generatingAiReply, setGeneratingAiReply] = useState(false);
+  const { demoMode } = useContext(userContext);
 
   if (!viewMail) return null;
   const hue = (viewMail.name.charCodeAt(0) * 17) % 360;
@@ -399,6 +404,10 @@ const EmailDetailModal = ({
   };
 
   const handleSend = async () => {
+    if (demoMode) {
+      toast.info("Demo mode — sending follow-up is simulated.");
+      return;
+    }
     const html = editor?.getHTML();
     if (!subject.trim() || !editor?.getText().trim()) return;
     setSending(true);
@@ -466,6 +475,10 @@ const EmailDetailModal = ({
 
   const handleGenerateAiReply = async () => {
     try {
+      if (demoMode) {
+        toast.info("Demo mode — AI reply generation is simulated.");
+        return;
+      }
       setGeneratingAiReply(true);
 
       const response = await generateAIReplyApi({

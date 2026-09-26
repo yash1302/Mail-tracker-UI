@@ -8,8 +8,8 @@ import {
   deleteDraftApi,
 } from "../utils/api.utils.js";
 import { userContext } from "../context/userContext.js";
-import { convertToHtml } from "../utils/fileUtils.js";
 import { toast } from "react-toastify";
+import { DEMO_DRAFTS } from "../data/demoData.js";
 
 const SkeletonRow = () => (
   <tr className="border-b border-slate-50 animate-pulse">
@@ -34,7 +34,7 @@ const SkeletonRow = () => (
 const Drafts = () => {
   const [drafts, setDrafts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false); // ← added
+  const [isSaving, setIsSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
 
   const [modal, setModal] = useState(false);
@@ -45,7 +45,7 @@ const Drafts = () => {
   const [attachments, setAttachments] = useState([]);
   const [title, setTitle] = useState("");
 
-  const { accounts } = useContext(userContext);
+  const { accounts, demoMode } = useContext(userContext);
 
   const reset = () => {
     setTitle("");
@@ -63,68 +63,21 @@ const Drafts = () => {
 
   const openRow = (row) => {
     setTitle(row.title || "");
-    setSubject(row.subject);
-    setBody(row.body);
+    setSubject(row.subject || "");
+    setBody(row.body || "");
     setAttachments(row.attachments || []);
     setEditIdx(row.id);
     setModalMode("view");
     setModal(true);
   };
 
-  const save = async () => {
-    if (!subject.trim() && !body.trim()) return;
-    setIsSaving(true); // ← start
-    try {
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("subject", subject);
-      formData.append("body", body);
-      formData.append("gmailAccountId", accounts[0].gmailAccountId);
-      formData.append("userId", accounts[0].id);
-
-      const existing = attachments.filter((a) => !(a instanceof File));
-      const newFiles = attachments.filter((a) => a instanceof File);
-
-      if (modalMode === "edit") {
-        formData.append(
-          "existingAttachments",
-          JSON.stringify(existing.map((a) => ({ _id: a._id }))),
-        );
-      }
-      newFiles.forEach((file) => formData.append("files", file));
-
-      if (modalMode === "edit") {
-        await updateDraftApi(editIdx, formData);
-      } else {
-        await createDraftApi(formData);
-      }
-
-      await fetchDrafts();
-      close();
-    } catch (err) {
-      console.error("Draft save error:", err);
-      toast.error("Failed to save draft.");
-    } finally {
-      setIsSaving(false); // ← always stop
-    }
-  };
-
-  const handleDelete = async (e, id) => {
-    e.stopPropagation();
-    setDeletingId(id);
-    try {
-      await deleteDraftApi(id);
-      setDrafts((d) => d.filter((x) => x.id !== id));
-      toast.success("Draft deleted.");
-    } catch (err) {
-      console.error("Delete draft error:", err);
-      toast.error("Failed to delete draft.");
-    } finally {
-      setDeletingId(null);
-    }
-  };
-
   const fetchDrafts = useCallback(async () => {
+    if (demoMode) {
+      setDrafts(DEMO_DRAFTS);
+      setIsLoading(false);
+      return;
+    }
+    if (!accounts?.length) return;
     setIsLoading(true);
     try {
       const res = await getDraftsApi({
@@ -139,6 +92,7 @@ const Drafts = () => {
         body_preview: d.bodyPreview,
         attachments: d.attachments || [],
       }));
+
       setDrafts(formatted);
     } catch (err) {
       console.error("Fetch drafts error:", err);
@@ -146,12 +100,88 @@ const Drafts = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [accounts]);
+  }, [accounts, demoMode]);
+
+  const save = async () => {
+    if (!subject.trim() && !body.trim()) return;
+
+    if (demoMode) {
+      toast.info("Demo mode — drafts cannot be saved.");
+
+      close();
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const formData = new FormData();
+
+      formData.append("title", title);
+      formData.append("subject", subject);
+      formData.append("body", body);
+      formData.append("gmailAccountId", accounts[0].gmailAccountId);
+      formData.append("userId", accounts[0].id);
+
+      const existing = attachments.filter((a) => !(a instanceof File));
+
+      const newFiles = attachments.filter((a) => a instanceof File);
+
+      if (modalMode === "edit") {
+        formData.append(
+          "existingAttachments",
+          JSON.stringify(
+            existing.map((a) => ({
+              _id: a._id,
+            })),
+          ),
+        );
+      }
+
+      newFiles.forEach((file) => {
+        formData.append("files", file);
+      });
+
+      if (modalMode === "edit") {
+        await updateDraftApi(editIdx, formData);
+      } else {
+        await createDraftApi(formData);
+      }
+
+      await fetchDrafts();
+
+      close();
+    } catch (err) {
+      console.error("Draft save error:", err);
+      toast.error("Failed to save draft.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async (e, id) => {
+    e.stopPropagation();
+    if (demoMode) {
+      toast.info("Demo mode — drafts cannot be deleted.");
+      return;
+    }
+    setDeletingId(id);
+    try {
+      await deleteDraftApi(id);
+      setDrafts((d) => d.filter((x) => x.id !== id));
+      toast.success("Draft deleted.");
+    } catch (err) {
+      console.error("Delete draft error:", err);
+      toast.error("Failed to delete draft.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
 
   useEffect(() => {
-    if (accounts?.length) fetchDrafts();
-  }, [accounts, fetchDrafts]);
-
+    fetchDrafts();
+  }, [fetchDrafts]);
 
   return (
     <div className="flex flex-col gap-4 h-full">
@@ -193,6 +223,7 @@ const Drafts = () => {
                   <SkeletonRow key={i} />
                 ))}
 
+              {/* Empty */}
               {!isLoading && drafts.length === 0 && (
                 <tr>
                   <td
@@ -272,7 +303,7 @@ const Drafts = () => {
           close={close}
           save={save}
           setModalMode={setModalMode}
-          isSaving={isSaving} // ← passed down
+          isSaving={isSaving}
         />
       )}
     </div>

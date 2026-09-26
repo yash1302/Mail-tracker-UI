@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getFollowUpsApi } from "../../utils/api.utils.js";
 import { userContext } from "../../context/userContext.js";
 import { FaLongArrowAltRight } from "react-icons/fa";
+import { DEMO_FOLLOWUPS } from "../../data/demoData.js";
 
 const SkeletonRow = () => (
   <div className="flex flex-col gap-[6px] py-[10px] border-b border-slate-50 animate-pulse">
@@ -19,11 +20,15 @@ const SkeletonRow = () => (
 
 const FollowupQueue = ({ openFollowupModal, refreshKey }) => {
   const navigate = useNavigate();
-  const { accounts } = useContext(userContext);
+  const { accounts, demoMode } = useContext(userContext);
   const [leads, setLeads] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchFollowUps = useCallback(async () => {
+    if (demoMode) {
+      setLeads(DEMO_FOLLOWUPS.slice(0, 5));
+      return;
+    }
     if (!accounts?.length) return;
     setIsLoading(true);
     try {

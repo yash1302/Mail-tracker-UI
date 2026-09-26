@@ -5,6 +5,7 @@ import EmailDetailModal from "../../modals/EmailDetailModal.jsx";
 import { toast } from "react-toastify";
 import { getSentEmails } from "../../../utils/api.utils.js";
 import { userContext } from "../../../context/userContext.js";
+import { DEMO_EMAILS } from "../../../data/demoData.js";
 
 const SentEmailsCard = ({ setTab }) => {
   const [search, setSearch] = useState("");
@@ -13,9 +14,13 @@ const SentEmailsCard = ({ setTab }) => {
   const [emails, setEmails] = useState([]);
   const [isLoading, setIsLoading] = useState(false); // ← added
 
-  const { accounts } = useContext(userContext);
+  const { accounts, demoMode } = useContext(userContext);
 
   const handleGetSentEmails = useCallback(async () => {
+    if (demoMode) {
+      setEmails(DEMO_EMAILS);
+      return;
+    }
     setIsLoading(true); // ← start
     try {
       const result = await getSentEmails(

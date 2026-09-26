@@ -171,10 +171,16 @@ const Settings = () => {
   const [pendingDisconnect, setPendingDisconnect] = useState(null);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
 
-  const { accounts, fetchAccounts } = useContext(userContext);
+  const { accounts, fetchAccounts, demoMode } = useContext(userContext);
   const navigate = useNavigate();
 
+  // if (demoMode) return <DemoSettings />;
+
   const handleConnectGmail = () => {
+    if (demoMode) {
+      toast.info("Demo mode — Gmail connection is simulated.");
+      return;
+    }
     const token = localStorage.getItem("token");
 
     if (!token || isTokenExpired(token)) {
@@ -187,6 +193,11 @@ const Settings = () => {
   };
 
   const disconnect = async () => {
+    if (demoMode) {
+      toast.info("Demo mode — Gmail disconnection is simulated.");
+      setPendingDisconnect(null);
+      return;
+    }
     if (!pendingDisconnect) return;
     setIsDisconnecting(true);
     try {

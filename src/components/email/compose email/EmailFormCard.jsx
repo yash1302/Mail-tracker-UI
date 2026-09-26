@@ -47,7 +47,7 @@ const EmailFormCard = ({
   const [draftId, setDraftId] = useState(null);
   const [editorContent, setEditorContent] = useState("");
 
-  const { accounts } = useContext(userContext);
+  const { accounts, demoMode } = useContext(userContext);
 
   const hasLinks = (text) => {
     return /(https?:\/\/|<a\s+href=)/i.test(text);
@@ -153,6 +153,20 @@ const EmailFormCard = ({
   };
 
   const handleSend = async () => {
+    if (demoMode) {
+      toast.info("Demo mode — sending email is simulated.");
+      setRecipients([]);
+      setRecipientInput("");
+      setSubject("");
+      setBody("");
+      setEditorContent("");
+      setAttachments([]);
+      setDraftId(null);
+      setCCRecipients([]);
+      setBCCRecipients([]);
+      editor?.commands.clearContent();
+      return;
+    }
     try {
       const targets = [
         ...recipients,

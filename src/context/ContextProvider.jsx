@@ -2,13 +2,31 @@ import { useEffect, useState } from "react";
 import { getGmailAccounts } from "../utils/api.utils.js";
 import { userContext } from "./userContext.js";
 import { jwtDecode } from "jwt-decode";
+import { demoAccount } from "../data/demoData.js";
 
 const ContextProvider = ({ children }) => {
   const [screen, setScreen] = useState("landing");
   const [user, setUser] = useState(null);
   const [active, setActive] = useState("dashboard");
   const [accounts, setAccounts] = useState([]);
-  const [userName, setUserName] = useState("");
+  const [demoMode, setDemoMode] = useState(
+    () => localStorage.getItem("mailtracker-demo") === "true",
+  );
+  const [userName, setUserName] = useState(() =>
+    localStorage.getItem("mailtracker-demo") === "true" ? "Alex Demo" : "",
+  );
+
+  const enterDemoMode = () => {
+    localStorage.setItem("mailtracker-demo", "true");
+    setDemoMode(true);
+    setUserName("Alex Demo");
+  };
+
+  const exitDemoMode = () => {
+    localStorage.removeItem("mailtracker-demo");
+    setDemoMode(false);
+    setUserName("");
+  };
 
   const fetchAccounts = async () => {
     try {
@@ -28,6 +46,11 @@ const ContextProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    if (demoMode) {
+      setAccounts([demoAccount]);
+      return;
+    }
+
     const init = async () => {
       const token = localStorage.getItem("token");
 
@@ -48,7 +71,7 @@ const ContextProvider = ({ children }) => {
     };
 
     init();
-  }, []);
+  }, [demoMode]);
 
   return (
     <userContext.Provider
@@ -61,7 +84,11 @@ const ContextProvider = ({ children }) => {
         setActive,
         accounts,
         fetchAccounts,
-        userName
+        userName,
+        demoMode,
+        enterDemoMode,
+        exitDemoMode,
+        setAccounts,
       }}
     >
       {children}

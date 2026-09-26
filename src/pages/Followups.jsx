@@ -3,13 +3,14 @@ import FollowUpQueueCard from "../components/followups/FollowUpQueueCard.jsx";
 import FollowUpQueue from "../components/followups/FollowUpQueue.jsx";
 import { userContext } from "../context/userContext.js";
 import { getFollowUpsApi } from "../utils/api.utils.js";
+import { DEMO_FOLLOWUPS } from "../data/demoData.js";
 
 const FOLLOWUP_THRESHOLD_DAYS = 7;
 
 const Followups = () => {
   const [queue, setQueue] = useState([]);
   const [isLoadingQueue, setIsLoadingQueue] = useState(false);
-  const { accounts } = useContext(userContext);
+  const { accounts, demoMode } = useContext(userContext);
 
   const counts = {
     Pending: queue.filter((x) => x.status === "Pending").length,
@@ -23,26 +24,34 @@ const Followups = () => {
 
   const handlegetFollowUpsApi = useCallback(async () => {
     setIsLoadingQueue(true);
+
     try {
+      if (demoMode) {
+        setQueue(DEMO_FOLLOWUPS);
+        return;
+      }
       const data = await getFollowUpsApi(
         accounts[0]?.id,
         accounts[0]?.gmailAccountId,
       );
       setQueue(data?.data?.data || []);
-    } catch (_error) {
-      console.error("Error fetching follow-ups:", _error);
+    } catch (error) {
+      console.error("Error fetching follow-ups:", error);
     } finally {
       setIsLoadingQueue(false);
     }
-  }, [accounts]);
-
-  console.log(queue, "followup queue");
+  }, [accounts, demoMode]);
 
   useEffect(() => {
+    if (demoMode) {
+      setQueue(DEMO_FOLLOWUPS);
+      setIsLoadingQueue(false);
+      return;
+    }
     if (accounts.length > 0) {
       handlegetFollowUpsApi();
     }
-  }, [accounts, handlegetFollowUpsApi]);
+  }, [accounts, demoMode, handlegetFollowUpsApi]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -57,6 +66,7 @@ const Followups = () => {
         setQueue={setQueue}
         handlegetFollowUpsApi={handlegetFollowUpsApi}
         isLoadingQueue={isLoadingQueue}
+        demoMode={demoMode}
       />
     </div>
   );

@@ -29,7 +29,7 @@ const FollowUpQueue = ({
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const { accounts } = useContext(userContext);
+  const { accounts, demoMode } = useContext(userContext);
   const [viewMail, setViewMail] = useState(null);
   const [forceCompose, setForceCompose] = useState(false);
 
@@ -81,6 +81,10 @@ const FollowUpQueue = ({
   });
 
   const handleRefreshReplies = async () => {
+    if (demoMode) {
+      toast.info("Demo mode — reply data is simulated.");
+      return;
+    }
     setIsRefreshing(true);
     try {
       await checkRepliesApi({

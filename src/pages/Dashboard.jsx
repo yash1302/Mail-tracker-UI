@@ -12,11 +12,11 @@ import {
 import { userContext } from "../context/userContext.js";
 import { toast } from "react-toastify";
 import { FaLongArrowAltRight } from "react-icons/fa";
-import { FiRefreshCw } from "react-icons/fi";
+import { DASHBOARD_DEMO_EMAILS, DEMO_KPI } from "../data/demoData.js";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { accounts } = useContext(userContext);
+  const { accounts, demoMode } = useContext(userContext);
 
   const [viewMail, setViewMail] = useState(null);
   const [emails, setEmails] = useState([]);
@@ -43,6 +43,10 @@ const Dashboard = () => {
   };
 
   const handleGetKpi = useCallback(async () => {
+    if (demoMode) {
+      setKpi(DEMO_KPI);
+      return;
+    }
     if (!accounts?.length) return;
     try {
       const result = await getDashboardKPI(
@@ -54,9 +58,13 @@ const Dashboard = () => {
     } catch (_error) {
       console.error("Failed to fetch KPI:", _error);
     }
-  }, [accounts, analyticsFilter]);
-
+  }, [accounts, analyticsFilter, demoMode]);
   const handleGetSentEmails = useCallback(async () => {
+    if (demoMode) {
+      setEmails(DASHBOARD_DEMO_EMAILS);
+      setIsLoading(false);
+      return;
+    }
     if (!accounts?.length) return;
     setIsLoading(true);
     try {
@@ -71,13 +79,17 @@ const Dashboard = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [accounts]);
+  }, [accounts, demoMode]);
 
   const refreshAll = useCallback(async () => {
     await Promise.all([handleGetKpi(), handleGetSentEmails()]);
   }, [handleGetKpi, handleGetSentEmails]);
 
   const handleCheckReplies = async () => {
+    if (demoMode) {
+      toast.info("Demo mode — reply data is simulated.");
+      return;
+    }
     if (!accounts?.length) return;
     setIsRefreshing(true);
     try {
@@ -96,8 +108,16 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    if (accounts?.length) refreshAll();
-  }, [accounts, refreshAll, analyticsFilter]);
+    if (demoMode) {
+      setKpi(DEMO_KPI);
+      setEmails(DASHBOARD_DEMO_EMAILS);
+      setIsLoading(false);
+      return;
+    }
+    if (accounts?.length) {
+      refreshAll();
+    }
+  }, [accounts, demoMode, refreshAll]);
 
   const formattedEmails = emails.slice(0, 10).map((thread) => {
     const messages = thread.messages || [];
@@ -128,7 +148,7 @@ const Dashboard = () => {
       date: new Date(thread.lastActivityAt).toLocaleDateString(),
       openCount: lastMessage.opensCount || 0,
       clicksCount: thread.totalClicks || 0,
-      messages: messages,
+      messages,
       followUpCount: messages.filter((m) => m.type === "followup").length,
       replies: messages.filter((m) => m.direction === "incoming").length,
       isReplied: messages.some((m) => m.direction === "incoming"),
@@ -137,7 +157,7 @@ const Dashboard = () => {
 
   return (
     <div className="flex flex-col gap-4 h-full min-h-0 font-sans">
-      {/* KPI Cards with Filter & Refresh */}
+      {/* KPI Cards */}
       <div className="flex flex-col gap-2 shrink-0">
         <AnalyticsCards
           kpi={kpi}
@@ -166,7 +186,8 @@ const Dashboard = () => {
               onClick={() => navigate("/send_mail")}
               className="hover:cursor-pointer flex items-center justify-center gap-[5px] text-[11px] font-semibold text-indigo-600 hover:text-indigo-700"
             >
-              View all <FaLongArrowAltRight />
+              View all
+              <FaLongArrowAltRight />
             </button>
           </div>
           <OutreachTable
@@ -182,7 +203,9 @@ const Dashboard = () => {
           viewMail={viewMail}
           setViewMail={(val) => {
             setViewMail(val);
-            if (!val) setForceCompose(false);
+            if (!val) {
+              setForceCompose(false);
+            }
           }}
           handleGetSentEmails={refreshAll}
           forceCompose={forceCompose}

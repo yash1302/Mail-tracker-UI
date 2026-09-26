@@ -3,7 +3,9 @@ import { Navigate } from "react-router-dom";
 import { isAuthenticated } from "./auth.js";
 
 const ProtectedRoute = ({ children }) => {
-  if (!isAuthenticated()) {
+  const isDemo = localStorage.getItem("mailtracker-demo") === "true";
+
+  if (!isAuthenticated() && !isDemo) {
     return <Navigate to="/landing" replace />;
   }
 

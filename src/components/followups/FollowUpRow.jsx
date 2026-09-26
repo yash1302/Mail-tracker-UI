@@ -11,10 +11,12 @@ import {
 } from "react-icons/fi";
 import { updateFollowUpStatusApi } from "../../utils/api.utils.js";
 import { toast } from "react-toastify";
+import { useContext } from "react";
+import { userContext } from "../../context/userContext.js";
 
 const FollowUpRow = ({ row, index, length, openCompose, setQueue }) => {
   const [loadingAction, setLoadingAction] = useState(null);
-
+  const { demoMode } = useContext(userContext);
   const hue = (row.to[0].charCodeAt(0) * 17) % 360;
 
   const urgency =
@@ -36,6 +38,10 @@ const FollowUpRow = ({ row, index, length, openCompose, setQueue }) => {
   const isActing = loadingAction !== null;
 
   const handleAction = async (action) => {
+    if (demoMode) {
+      toast.info(`Demo mode — ${action} action is simulated.`);
+      return;
+    }
     if (!row.followUpId && !row.id) {
       toast.error("Follow-up ID missing.");
       return;

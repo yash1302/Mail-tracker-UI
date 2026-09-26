@@ -15,8 +15,12 @@ import {
   FiX,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { userContext } from "../context/userContext.js";
 
 const LandingPage = () => {
+  const navigate = useNavigate();
+  const { enterDemoMode } = useContext(userContext);
   const features = [
     {
       icon: <FiSend size={20} />,
@@ -58,6 +62,11 @@ const LandingPage = () => {
 
   const handleGoogleAuth = () => {
     window.location.href = `${import.meta.env.VITE_BACKEND_URL}api/auth/googleSignin`;
+  };
+
+  const handleDemo = () => {
+    enterDemoMode();
+    navigate("/dashboard");
   };
 
   return (
@@ -131,6 +140,24 @@ const LandingPage = () => {
           box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
           transform: translateY(-1px);
         }
+
+        .demo-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          padding: 13px 28px;
+          border-radius: 12px;
+          font-size: 15px;
+          font-weight: 700;
+          border: 1px solid rgba(129,140,248,0.5);
+          background: rgba(99,102,241,0.18);
+          color: #c7d2fe;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .demo-btn:hover { background: rgba(99,102,241,0.3); transform: translateY(-1px); }
       `}</style>
 
       {/* Navbar */}
@@ -254,9 +281,8 @@ const LandingPage = () => {
             margin: "0 auto 40px",
           }}
         >
-          MailTracker helps you send cold emails at scale, track replies,
-          manage followups, and monitor outreach performance — all from one
-          dashboard.
+          MailTracker helps you send cold emails at scale, track replies, manage
+          followups, and monitor outreach performance — all from one dashboard.
         </p>
 
         <div
@@ -270,6 +296,10 @@ const LandingPage = () => {
           <button onClick={handleGoogleAuth} className="google-btn">
             <FcGoogle size={20} />
             Continue with Google
+          </button>
+          <button onClick={handleDemo} className="demo-btn" type="button">
+            <FiArrowRight size={18} />
+            Try the interactive demo
           </button>
         </div>
       </div>

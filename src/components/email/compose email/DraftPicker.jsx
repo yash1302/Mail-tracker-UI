@@ -2,10 +2,10 @@ import { FiEdit3 } from "react-icons/fi";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { getDraftsApi } from "../../../utils/api.utils.js";
 import { userContext } from "../../../context/userContext.js";
+import { DROPDOWN_DEMO_DRAFTS } from "../../../data/demoData.js";
 
 const DraftPicker = ({
   setSubject,
-
   setShowDraftPicker,
   addFiles,
   setDraftId,
@@ -13,10 +13,14 @@ const DraftPicker = ({
 }) => {
   const [drafts, setDrafts] = useState([]);
 
-  const { accounts } = useContext(userContext);
+  const { accounts, demoMode } = useContext(userContext);
 
   const fetchDrafts = useCallback(async () => {
     try {
+      if (demoMode) {
+        setDrafts(DROPDOWN_DEMO_DRAFTS);
+        return;
+      }
       const res = await getDraftsApi({
         userId: accounts[0].id,
         gmailAccountId: accounts[0].gmailAccountId,

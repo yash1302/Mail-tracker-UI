@@ -4,9 +4,16 @@ import { userContext } from "../../context/userContext.js";
 import { useNavigate } from "react-router-dom";
 
 const UserProfile = () => {
-  const { accounts,userName } = useContext(userContext);
+  const { accounts, userName, demoMode, exitDemoMode, setAccounts } =
+    useContext(userContext);
   const navigate = useNavigate();
   const handleLogout = () => {
+    if (demoMode) {
+      exitDemoMode();
+      setAccounts([]);
+      navigate("/landing");
+      return;
+    }
     localStorage.removeItem("token");
     window.location.reload();
     navigate("/");
