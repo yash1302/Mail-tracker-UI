@@ -15,6 +15,7 @@ const UserProfile = () => {
       return;
     }
     localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
     window.location.reload();
     navigate("/");
   };
