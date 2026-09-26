@@ -13,6 +13,27 @@ import { userContext } from "../context/userContext.js";
 import { toast } from "react-toastify";
 import { FaLongArrowAltRight } from "react-icons/fa";
 import { DASHBOARD_DEMO_EMAILS, DEMO_KPI } from "../data/demoData.js";
+import DemoConversionToast from "../components/Democonversiontoast.jsx";
+import DemoWalkthrough from "../components/Demowalkthrough.jsx";
+import DemoSignupBanner from "../components/Demosignupbanner.jsx";
+
+const WALKTHROUGH_STEPS = [
+  {
+    key: "analytics",
+    title: "Your outreach analytics",
+    desc: "See applications sent, reply rate, and click rate at a glance — updated automatically as you send.",
+  },
+  {
+    key: "followups",
+    title: "Auto follow-up queue",
+    desc: "No reply after 7 days? It lands here automatically. One click sends the follow-up.",
+  },
+  {
+    key: "outreach",
+    title: "Recent outreach",
+    desc: "Every application you've sent, with opens, clicks, and reply status — click any row for the full thread.",
+  },
+];
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -38,6 +59,14 @@ const Dashboard = () => {
   });
   const [forceCompose, setForceCompose] = useState(false);
 
+  // In-demo conversion hook: counts real interactions (row opens, followup
+  // clicks, refresh clicks) so the signup card only appears after genuine
+  // engagement, not immediately on page load.
+  const [interactionCount, setInteractionCount] = useState(0);
+  const trackInteraction = () => {
+    if (demoMode) setInteractionCount((c) => c + 1);
+  };
+
   const refreshFollowups = () => {
     setFollowupRefreshKey((prev) => prev + 1);
   };
@@ -59,6 +88,7 @@ const Dashboard = () => {
       console.error("Failed to fetch KPI:", _error);
     }
   }, [accounts, analyticsFilter, demoMode]);
+
   const handleGetSentEmails = useCallback(async () => {
     if (demoMode) {
       setEmails(DASHBOARD_DEMO_EMAILS);
@@ -86,6 +116,7 @@ const Dashboard = () => {
   }, [handleGetKpi, handleGetSentEmails]);
 
   const handleCheckReplies = async () => {
+    trackInteraction();
     if (demoMode) {
       toast.info("Demo mode — reply data is simulated.");
       return;
@@ -156,63 +187,112 @@ const Dashboard = () => {
   });
 
   return (
-    <div className="flex flex-col gap-4 h-full min-h-0 font-sans">
-      {/* KPI Cards */}
-      <div className="flex flex-col gap-2 shrink-0">
-        <AnalyticsCards
-          kpi={kpi}
-          onRefresh={handleCheckReplies}
-          isRefreshing={isRefreshing}
-          analyticsFilter={analyticsFilter}
-          setAnalyticsFilter={setAnalyticsFilter}
-        />
-      </div>
+    <DemoWalkthrough steps={demoMode ? WALKTHROUGH_STEPS : []}>
+      {(activeKey, isStepActive) => (
+        <div className="flex flex-col gap-4 h-full min-h-0 font-sans">
+          {/* {demoMode && <DemoSignupBanner />} */}
 
-      <div className="grid grid-cols-[280px_1fr] gap-3 flex-1 min-h-0">
-        <FollowupQueue
-          refreshKey={followupRefreshKey}
-          openFollowupModal={(lead) => {
-            setViewMail(lead);
-            setForceCompose(true);
-          }}
-        />
-
-        <div className="bg-white rounded-[14px] border border-slate-100 shadow-sm flex flex-col overflow-hidden">
-          <div className="flex items-center justify-between px-[18px] py-[14px] border-b border-slate-100 shrink-0">
-            <h2 className="text-[13px] font-bold text-slate-900">
-              Recent Outreach
-            </h2>
-            <button
-              onClick={() => navigate("/send_mail")}
-              className="hover:cursor-pointer flex items-center justify-center gap-[5px] text-[11px] font-semibold text-indigo-600 hover:text-indigo-700"
-            >
-              View all
-              <FaLongArrowAltRight />
-            </button>
-          </div>
-          <OutreachTable
-            recentOutreachPreview={formattedEmails}
-            setViewMail={setViewMail}
-            isLoading={isLoading}
-          />
-        </div>
-      </div>
-
-      {viewMail && (
-        <EmailDetailModal
-          viewMail={viewMail}
-          setViewMail={(val) => {
-            setViewMail(val);
-            if (!val) {
-              setForceCompose(false);
+          {/* KPI Cards */}
+          <div
+            className="flex flex-col gap-2 shrink-0 rounded-[14px] transition-all"
+            style={
+              isStepActive("analytics")
+                ? {
+                    boxShadow:
+                      "0 0 0 3px #818cf8, 0 0 0 6px rgba(129,140,248,0.25)",
+                  }
+                : undefined
             }
-          }}
-          handleGetSentEmails={refreshAll}
-          forceCompose={forceCompose}
-          onFollowupSent={refreshFollowups}
-        />
+          >
+            <AnalyticsCards
+              kpi={kpi}
+              onRefresh={handleCheckReplies}
+              isRefreshing={isRefreshing}
+              analyticsFilter={analyticsFilter}
+              setAnalyticsFilter={setAnalyticsFilter}
+            />
+          </div>
+
+          <div className="grid grid-cols-[280px_1fr] gap-3 flex-1 min-h-0">
+            <div
+              className="rounded-[14px] transition-all"
+              style={
+                isStepActive("followups")
+                  ? {
+                      boxShadow:
+                        "0 0 0 3px #818cf8, 0 0 0 6px rgba(129,140,248,0.25)",
+                    }
+                  : undefined
+              }
+            >
+              <FollowupQueue
+                refreshKey={followupRefreshKey}
+                openFollowupModal={(lead) => {
+                  trackInteraction();
+                  setViewMail(lead);
+                  setForceCompose(true);
+                }}
+              />
+            </div>
+
+            <div
+              className="bg-white rounded-[14px] border border-slate-100 shadow-sm flex flex-col overflow-hidden transition-all"
+              style={
+                isStepActive("outreach")
+                  ? {
+                      boxShadow:
+                        "0 0 0 3px #818cf8, 0 0 0 6px rgba(129,140,248,0.25)",
+                    }
+                  : undefined
+              }
+            >
+              <div className="flex items-center justify-between px-[18px] py-[14px] border-b border-slate-100 shrink-0">
+                <h2 className="text-[13px] font-bold text-slate-900">
+                  Recent Outreach
+                </h2>
+                <button
+                  onClick={() => navigate("/send_mail")}
+                  className="hover:cursor-pointer flex items-center justify-center gap-[5px] text-[11px] font-semibold text-indigo-600 hover:text-indigo-700"
+                >
+                  View all
+                  <FaLongArrowAltRight />
+                </button>
+              </div>
+              <OutreachTable
+                recentOutreachPreview={formattedEmails}
+                setViewMail={(row) => {
+                  trackInteraction();
+                  setViewMail(row);
+                }}
+                isLoading={isLoading}
+              />
+            </div>
+          </div>
+
+          {viewMail && (
+            <EmailDetailModal
+              viewMail={viewMail}
+              setViewMail={(val) => {
+                setViewMail(val);
+                if (!val) {
+                  setForceCompose(false);
+                }
+              }}
+              handleGetSentEmails={refreshAll}
+              forceCompose={forceCompose}
+              onFollowupSent={refreshFollowups}
+            />
+          )}
+
+          {demoMode && (
+            <DemoConversionToast
+              interactionCount={interactionCount}
+              threshold={2}
+            />
+          )}
+        </div>
       )}
-    </div>
+    </DemoWalkthrough>
   );
 };
 
