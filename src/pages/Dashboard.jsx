@@ -215,7 +215,7 @@ const Dashboard = () => {
 
           <div className="grid grid-cols-[280px_1fr] gap-3 flex-1 min-h-0">
             <div
-              className="rounded-[14px] transition-all"
+              className="rounded-[14px] transition-all grid grid-cols-[280px_1fr] gap-3 flex-1 min-h-0"
               style={
                 isStepActive("followups")
                   ? {
