@@ -193,11 +193,12 @@ const LandingPage = () => {
   ];
 
   const handleGoogleAuth = () => {
+    console.log(import.meta.env.VITE_BACKEND_URL,"backend URL")
     window.location.href = `${
       import.meta.env.VITE_BACKEND_URL
     }api/auth/googleSignin`;
   };
-
+  
   const handleDemo = () => {
     enterDemoMode();
     navigate("/dashboard");
