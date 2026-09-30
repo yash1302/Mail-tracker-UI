@@ -168,8 +168,8 @@ const Drafts = () => {
     setDeletingId(id);
     try {
       await deleteDraftApi(id);
-      setDrafts((d) => d.filter((x) => x.id !== id));
       toast.success("Draft deleted.");
+      await fetchDrafts();
     } catch (err) {
       console.error("Delete draft error:", err);
       toast.error("Failed to delete draft.");
@@ -180,8 +180,8 @@ const Drafts = () => {
 
 
   useEffect(() => {
-    fetchDrafts();
-  }, [fetchDrafts]);
+    if (accounts?.length) fetchDrafts();
+  }, [accounts, fetchDrafts]);
 
   return (
     <div className="flex flex-col gap-4 h-full">
