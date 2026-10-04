@@ -14,7 +14,14 @@ import { toast } from "react-toastify";
 import { useContext } from "react";
 import { userContext } from "../../context/userContext.js";
 
-const FollowUpRow = ({ row, index, length, openCompose, setQueue }) => {
+const FollowUpRow = ({
+  row,
+  index,
+  length,
+  openCompose,
+  setQueue,
+  handlegetFollowUpsApi,
+}) => {
   const [loadingAction, setLoadingAction] = useState(null);
   const { demoMode } = useContext(userContext);
   const hue = (row.to[0].charCodeAt(0) * 17) % 360;
@@ -67,22 +74,7 @@ const FollowUpRow = ({ row, index, length, openCompose, setQueue }) => {
     try {
       await updateFollowUpStatusApi(row.followUpId || row.id, action);
 
-      if (action === "dismiss") {
-        setQueue((q) =>
-          q.filter(
-            (x) => (x.followUpId || x.id) !== (row.followUpId || row.id),
-          ),
-        );
-      } else {
-        setQueue((q) =>
-          q.map((x) =>
-            (x.followUpId || x.id) === (row.followUpId || row.id)
-              ? { ...x, status: statusMap[action] }
-              : x,
-          ),
-        );
-      }
-
+      await handlegetFollowUpsApi();
       toast.success(toastMap[action]);
     } catch (_error) {
       console.error(_error);

@@ -55,10 +55,21 @@ const EmailFormCard = ({
 
   const addRecipient = (val) => {
     const v = val.trim().replace(/,$/, "");
-    if (v && !recipients.includes(v)) {
-      setRecipients((r) => [...r, v]);
-      setAllTo((a) => [...a, v]);
+    if (!v) return;
+
+    const emailExists =
+      recipients.includes(v) ||
+      ccRecipients.includes(v) ||
+      bccRecipients.includes(v);
+
+    if (emailExists) {
+      toast.warning(`${v} is already present in To/CC/BCC.`);
+      setRecipientInput("");
+      return;
     }
+
+    setRecipients((r) => [...r, v]);
+    setAllTo((a) => [...a, v]);
     setRecipientInput("");
   };
 
@@ -82,10 +93,40 @@ const EmailFormCard = ({
 
   const addCCRecipient = (val) => {
     const v = val.trim().replace(/,$/, "");
-    if (v && !ccRecipients.includes(v)) {
-      setCCRecipients((r) => [...r, v]);
+    if (!v) return;
+
+    const emailExists =
+      recipients.includes(v) ||
+      ccRecipients.includes(v) ||
+      bccRecipients.includes(v);
+
+    if (emailExists) {
+      toast.warning(`${v} is already present in To/CC/BCC.`);
+      setCCRecipientInput("");
+      return;
     }
+
+    setCCRecipients((r) => [...r, v]);
     setCCRecipientInput("");
+  };
+
+  const addBCCRecipient = (val) => {
+    const v = val.trim().replace(/,$/, "");
+    if (!v) return;
+
+    const emailExists =
+      recipients.includes(v) ||
+      ccRecipients.includes(v) ||
+      bccRecipients.includes(v);
+
+    if (emailExists) {
+      toast.warning(`${v} is already present in To/CC/BCC.`);
+      setBCCRecipientInput("");
+      return;
+    }
+
+    setBCCRecipients((r) => [...r, v]);
+    setBCCRecipientInput("");
   };
 
   const handleCCRecipientKey = (e) => {
@@ -106,14 +147,6 @@ const EmailFormCard = ({
 
   const removeCCRecipient = (r) =>
     setCCRecipients((rs) => rs.filter((x) => x !== r));
-
-  const addBCCRecipient = (val) => {
-    const v = val.trim().replace(/,$/, "");
-    if (v && !bccRecipients.includes(v)) {
-      setBCCRecipients((r) => [...r, v]);
-    }
-    setBCCRecipientInput("");
-  };
 
   const handleBCCRecipientKey = (e) => {
     if (e.key === "Enter" || e.key === ",") {

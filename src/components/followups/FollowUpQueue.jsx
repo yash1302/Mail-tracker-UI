@@ -175,6 +175,7 @@ const FollowUpQueue = ({
               length={visible.length}
               openCompose={openCompose}
               setQueue={setQueue}
+              handlegetFollowUpsApi={handlegetFollowUpsApi}
             />
           ))}
         </div>
